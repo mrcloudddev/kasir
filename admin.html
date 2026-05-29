@@ -88,7 +88,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-80">
                 <h2 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <span class="text-emerald-600">📈</span> Histori Penjualan POS (Live)
                 </h2>
@@ -108,7 +108,7 @@
                 </div>
             </div>
 
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-80">
                 <h2 class="text-xs font-black text-rose-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <span class="text-rose-600">🔒</span> Observability Activity Logs (Live)
                 </h2>
@@ -130,6 +130,29 @@
             </div>
 
         </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col">
+            <h2 class="text-xs font-black text-indigo-950 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                <span>📦</span> Live Real-Time Master Stok Gudang & Rak
+            </h2>
+            <div class="overflow-x-auto text-[11px]">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-900 text-white font-bold">
+                            <th class="p-2.5 rounded-l">Barcode</th>
+                            <th class="p-2.5">Nama Produk</th>
+                            <th class="p-2.5 text-right">Harga Modal</th>
+                            <th class="p-2.5 text-right">Harga Jual</th>
+                            <th class="p-2.5 text-center rounded-r">Sisa Stok</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-stock-body" class="divide-y divide-slate-200 text-slate-700 font-medium">
+                        <tr><td colspan="5" class="text-center py-8 text-slate-400 italic">Memuat daftar master stok barang toko...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -151,8 +174,8 @@
             }
         }
 
-        // 1. Ambil data produk untuk Dropdown Pilihan Menu Admin
-        async function muatDropdownBarang() {
+        // 1. Ambil data produk untuk Dropdown & UPDATE TABEL LIVE STOK
+        async function muatDropdownDanTabelStok() {
             try {
                 const res = await fetch(`${API_URL}?action=getProduk`, { method: 'GET', mode: 'cors' });
                 const txt = await res.text();
@@ -160,13 +183,39 @@
                 
                 if (result.success || Array.isArray(result)) {
                     const select = document.getElementById('admin-product-select');
+                    const stockBody = document.getElementById('table-stock-body');
                     const dataArray = Array.isArray(result) ? result : result.data;
                     
+                    // Update Pilihan Dropdown Opname
                     const selectedValueBefore = select.value;
                     select.innerHTML = '';
                     
+                    // Clear isi tabel sebelum di-render ulang
+                    stockBody.innerHTML = '';
+                    
                     dataArray.forEach(p => {
+                        // Render Dropdown
                         select.innerHTML += `<option value="${p.barcode}">${p.product_name} (Sisa Rak: ${p.stock})</option>`;
+                        
+                        // Deteksi warna badge stok biar eye-catching jika kritis/habis
+                        let stokBadgeClass = "bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-0.5 rounded";
+                        if (parseInt(p.stock) === 0) {
+                            stokBadgeClass = "bg-rose-100 text-rose-700 border border-rose-300 font-black px-2 py-0.5 rounded animate-bounce";
+                        } else if (parseInt(p.stock) <= 10) {
+                            stokBadgeClass = "bg-amber-50 text-amber-700 border border-amber-200 font-bold px-2 py-0.5 rounded";
+                        }
+
+                        // Render Baris Tabel Live Stok Baru
+                        stockBody.innerHTML += `
+                            <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                                <td class="p-2.5 font-mono text-slate-400">${p.barcode}</td>
+                                <td class="p-2.5 font-bold text-slate-900">${p.product_name}</td>
+                                <td class="p-2.5 text-right text-slate-500 font-mono">Rp ${parseInt(p.cost_price || 0).toLocaleString('id-ID')}</td>
+                                <td class="p-2.5 text-right text-indigo-700 font-mono font-bold">Rp ${parseInt(p.selling_price || 0).toLocaleString('id-ID')}</td>
+                                <td class="p-2.5 text-center">
+                                    <span class="${stokBadgeClass}">${p.stock} Item</span>
+                                </td>
+                            </tr>`;
                     });
                     
                     if(selectedValueBefore) select.value = selectedValueBefore;
@@ -182,7 +231,8 @@
             setIndicatorStatus(true);
             
             try {
-                await muatDropdownBarang();
+                // Tarik data stok barang sekalian render tabelnya
+                await muatDropdownDanTabelStok();
                 
                 const res = await fetch(`${API_URL}?action=getLaporanAdmin`, { method: 'GET', mode: 'cors' });
                 const txt = await res.text();
@@ -232,7 +282,7 @@
             }
         }
 
-        // 3. Eksekusi Master Produk Baru ke Google Sheets
+        // 3. Eksekusi Kirim Data Master Produk Baru ke Google Sheets
         function eksekusiTambahProdukBaru() {
             const barcode = document.getElementById('new-p-barcode').value.trim();
             const name = document.getElementById('new-p-name').value.trim();
@@ -241,7 +291,7 @@
             const stock = document.getElementById('new-p-stock').value;
             
             if(!barcode || !name || cost < 0 || selling <= 0 || stock < 0) {
-                return alert("Mohon lengkapi formulir produk baru dengan valid (Harga & Stok tidak boleh kosong atau bernilai minus)!");
+                return alert("Mohon lengkapi formulir produk baru dengan valid!");
             }
 
             const payload = { 
@@ -282,7 +332,7 @@
             });
         }
 
-        // 4. Koreksi Stock Opname
+        // 4. Kirim Perintah Penyesuaian Stock Opname Existing
         function eksekusiUpdateStokGudang() {
             const barcode = document.getElementById('admin-product-select').value;
             const stock = document.getElementById('admin-new-stock').value;
@@ -316,25 +366,22 @@
             });
         }
 
-        // OPTIMASI ANTI-DELAY: Detektor Interval Pintar Berbasis Visibilitas Layar
+        // TIMER PINTAR: Mengaktifkan fungsi auto-refresh data setiap 25 detik sekali secara otomatis
         function aktifkanLiveAutoSync() {
             if(loopIntervalAktivitas) clearInterval(loopIntervalAktivitas);
             
             loopIntervalAktivitas = setInterval(() => {
-                // Hanya refresh jika tab Admin sedang aktif dilihat, jeda diperlonggar menjadi 25 detik
                 if (!document.hidden) {
                     muatDataLaporanSistem(false); 
                 }
-            }, 25000); 
+            }, 25000);
         }
 
-        // Inisialisasi muatan data otomatis saat pertama kali dibuka
         window.addEventListener('DOMContentLoaded', () => {
             muatDataLaporanSistem(true);
             aktifkanLiveAutoSync(); 
         });
 
-        // Jika admin pindah tab browser lalu kembali lagi, data langsung otomatis sinkron tanpa nunggu timer
         document.addEventListener("visibilitychange", () => {
             if (!document.hidden) {
                 muatDataLaporanSistem(false);
