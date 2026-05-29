@@ -299,12 +299,12 @@
             }
         }
 
-        // REVOLUSI FILTER TANGGAL: Dijamin 100% tembus untuk format strip (-) maupun garis miring (/)
+        // ENGINE PERBAIKAN TOTAL: Membaca teks mentah string bahasa Inggris/ISO/Lokal tanpa meleset
         function renderTabelRekapShift() {
             const shiftsBody = document.getElementById('table-shifts-body');
             shiftsBody.innerHTML = '';
             
-            const tanggalTarget = document.getElementById('filter-shift-date').value.trim(); // Contoh: "2026-05-29"
+            const tanggalTarget = document.getElementById('filter-shift-date').value.trim(); // "2026-05-29"
             document.getElementById('pdf-date-title').innerText = tanggalTarget;
             
             if (!tanggalTarget) {
@@ -312,18 +312,34 @@
                 return;
             }
 
-            // Pecah tanggal target ("2026-05-29") menjadi bagian terpisah
-            const partTarget = tanggalTarget.split('-'); // ["2026", "05", "29"]
-            const formatGarisMiring = `${partTarget[2]}/${partTarget[1]}/${partTarget[0]}`; // "29/05/2026"
+            // Siapkan komponen tanggal pembanding
+            const part = tanggalTarget.split('-'); // ["2026", "05", "29"]
+            const tahunTarget = part[0];
+            const bulanTarget = parseInt(part[1]); // 5
+            const tanggalHariTarget = parseInt(part[2]); // 29
+
+            // Daftar teks nama bulan bahasa Inggris (jika spreadsheet disetel United States Locale)
+            const namaBulanInggris = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const teksBulanTarget = namaBulanInggris[bulanTarget - 1]; // "May"
 
             const dataTerfilter = globalDataShifts.filter(s => {
+                // Gunakan kolom waktu_buka atau tanggal atau waktu_tutup (mana saja yang terisi teks)
                 let waktuRaw = s.waktu_buka || s.tanggal || s.waktu_tutup;
                 if (!waktuRaw) return false;
                 
-                let strWaktu = waktuRaw.toString().trim();
+                let str = waktuRaw.toString().trim();
                 
-                // Cek kecocokan menggunakan format strip ATAU format garis miring
-                return strWaktu.includes(tanggalTarget) || strWaktu.includes(formatGarisMiring);
+                // Kondisi A: Jika format database menggunakan strip (2026-05-29)
+                if (str.includes(tanggalTarget)) return true;
+
+                // Kondisi B: Jika format database menggunakan bahasa Inggris United States (Fri May 29 2026...)
+                if (str.includes(teksBulanTarget) && str.includes(tanggalHariTarget.toString()) && str.includes(tahunTarget)) return true;
+
+                // Kondisi C: Jika format database menggunakan angka murni standar Indonesia (29/05/2026)
+                const formatIndo = `${part[2]}/${part[1]}/${part[0]}`;
+                if (str.includes(formatIndo)) return true;
+
+                return false;
             });
             
             if (dataTerfilter.length === 0) {
