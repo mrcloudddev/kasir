@@ -2,59 +2,87 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Control Center (Dashboard Mode)</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-slate-50 font-sans min-h-screen">
 
     <header class="bg-indigo-900 text-white p-4 shadow-md flex justify-between items-center">
-        <h1 class="text-lg font-black tracking-wider text-indigo-200">👑 SYSTEM CONTROL PANEL (ADMIN ONLY)</h1>
-        <button onclick="muatDataLaporanSistem()" class="bg-indigo-700 hover:bg-indigo-600 text-xs px-3 py-1.5 rounded-md font-bold transition">🔄 Refresh Semua Data</button>
+        <div class="flex items-center gap-3">
+            <h1 class="text-xl font-bold tracking-wide">👑 SYSTEM CONTROL PANEL (ADMIN ONLY)</h1>
+        </div>
+        <button onclick="muatDataLaporanSistem()" class="bg-indigo-700 hover:bg-indigo-600 text-xs px-3 py-1.5 rounded-md font-bold transition flex items-center gap-1">
+            <span id="btn-refresh-icon">🔄</span> Refresh Semua Data
+        </button>
     </header>
 
     <div class="p-6 max-w-7xl mx-auto space-y-6">
         
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs max-w-md">
+        <div id="loading-state" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-lg font-semibold animate-pulse">
+            Sedang mensinkronisasikan data dengan Google Sheets terpusat...
+        </div>
+        
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs max-w-md">
             <h2 class="text-xs font-black text-indigo-700 uppercase tracking-widest mb-3">Koreksi Manual Stock Opname</h2>
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block text-slate-500 font-bold mb-1">Pilih Produk:</label>
-                    <select id="admin-product-select" class="w-full border border-slate-200 p-2 rounded-md bg-slate-50 font-bold focus:outline-none"></select>
+                    <label class="block text-slate-500 font-bold mb-1">Pilih Produk Gudang / Rak:</label>
+                    <select id="admin-product-select" class="w-full border border-slate-200 p-2 rounded-md bg-slate-50 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"></select>
                 </div>
                 <div>
-                    <label class="block text-slate-500 font-bold mb-1">Isi Stok Fisik Baru:</label>
-                    <input type="number" id="admin-new-stock" value="10" class="w-full border border-slate-200 p-2 rounded-md text-center text-lg font-mono font-bold focus:outline-none">
+                    <label class="block text-slate-500 font-bold mb-1">Isi Jumlah Stok Fisik Baru:</label>
+                    <input type="number" id="admin-new-stock" value="10" class="w-full border border-slate-200 p-2 rounded-md text-center text-lg font-mono font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
-                <button onclick="eksekusiUpdateStokGudang()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-md transition uppercase text-xs">Update Stok Utama</button>
+                <button onclick="eksekusiUpdateStokGudang()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-md transition uppercase text-xs tracking-wider shadow-sm">
+                    Update Stok Utama
+                </button>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs">
-                <h2 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-3">Histori Penjualan POS</h2>
-                <div class="overflow-x-auto max-h-64 text-[11px]">
-                    <table class="w-full text-left">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96">
+                <h2 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <span class="text-emerald-600">📈</span> Histori Penjualan POS
+                </h2>
+                <div class="overflow-y-auto flex-1 text-[11px]">
+                    <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold">
-                                <th class="p-2">Invoice</th><th class="p-2">Kasir</th><th class="p-2 text-right">Omzet</th>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold sticky top-0">
+                                <th class="p-2">No Invoice</th>
+                                <th class="p-2">Kasir / Shift</th>
+                                <th class="p-2 text-right">Omzet Jual</th>
                             </tr>
                         </thead>
-                        <tbody id="table-sales-body" class="divide-y divide-slate-100"></tbody>
+                        <tbody id="table-sales-body" class="divide-y divide-slate-100 text-slate-700">
+                            <tr>
+                                <td colspan="3" class="text-center py-8 text-slate-400 italic">Belum ada data transaksi dimuat.</td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs">
-                <h2 class="text-xs font-black text-rose-700 uppercase tracking-wider mb-3">Observability Activity Logs (Audit)</h2>
-                <div class="overflow-x-auto max-h-64 text-[11px]">
-                    <table class="w-full text-left">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96">
+                <h2 class="text-xs font-black text-rose-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <span class="text-rose-600">🔒</span> Observability Activity Logs (Audit)
+                </h2>
+                <div class="overflow-y-auto flex-1 text-[11px]">
+                    <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold">
-                                <th class="p-2">Waktu</th><th class="p-2">User</th><th class="p-2">Aksi</th><th class="p-2">Detail Keterangan</th>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold sticky top-0">
+                                <th class="p-2">Waktu Log</th>
+                                <th class="p-2">User</th>
+                                <th class="p-2">Aksi</th>
+                                <th class="p-2">Detail Keterangan</th>
                             </tr>
                         </thead>
-                        <tbody id="table-logs-body" class="divide-y divide-slate-100 font-mono text-[10px]"></tbody>
+                        <tbody id="table-logs-body" class="divide-y divide-slate-100 font-mono text-[10px] text-slate-600">
+                            <tr>
+                                <td colspan="4" class="text-center py-8 text-slate-400 italic">Belum ada data log aktivitas dimuat.</td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -63,50 +91,141 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxeIDsVJw2-EWsMGIqa_Tz2IzYG-_GJGnYfTmeuj1Dc2_ruvQ6_NdBcukjr4WoWIbwJ/exec"; // Gunakan URL Web App GAS Anda
+        // Masukkan URL Web App Google Apps Script Anda dengan teliti
+        const API_URL = "https://script.google.com/macros/s/AKfycbyl8aNE4-z4xr82wc77BLooOSKJfDmAU-zatHqp8X6aD8053FsRg5FtMoPdKuPZm1QH/exec";
 
+        function toggleLoading(show) {
+            const loader = document.getElementById('loading-state');
+            if (show) {
+                loader.classList.remove('hidden');
+            } else {
+                loader.classList.add('hidden');
+            }
+        }
+
+        // 1. Ambil data produk untuk Dropdown Pilihan Menu Admin
         async function muatDropdownBarang() {
-            const res = await fetch(`${API_URL}?action=getProduk`);
-            const data = await res.json();
-            if(data.success) {
-                const select = document.getElementById('admin-product-select'); select.innerHTML = '';
-                data.data.forEach(p => select.innerHTML += `<option value="${p.barcode}">${p.product_name} (Sisa Rak: ${p.stock})</option>`);
+            try {
+                const res = await fetch(`${API_URL}?action=getProduk`);
+                const result = await res.json();
+                
+                if (result.success) {
+                    const select = document.getElementById('admin-product-select');
+                    select.innerHTML = '';
+                    
+                    result.data.forEach(p => {
+                        select.innerHTML += `<option value="${p.barcode}">${p.product_name} (Sisa Rak: ${p.stock})</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error("Gagal memuat katalog barang ke form:", error);
             }
         }
 
+        // 2. Ambil Laporan Komprehensif (Penjualan & Audit Log)
         async function muatDataLaporanSistem() {
-            muatDropdownBarang();
-            const res = await fetch(`${API_URL}?action=getLaporanAdmin`);
-            const data = await res.json();
-            if(data.success) {
-                // Render Omzet Penjualan
-                const salesBody = document.getElementById('table-sales-body'); salesBody.innerHTML = '';
-                data.penjualan.reverse().forEach(r => {
-                    salesBody.innerHTML += `<tr><td class="p-2 font-bold font-mono text-indigo-900">${r.invoice_number}</td><td class="p-2">${r.cashier_name}</td><td class="p-2 text-right font-bold text-emerald-600">Rp ${parseInt(r.grand_total).toLocaleString('id-ID')}</td></tr>`;
-                });
+            toggleLoading(true);
+            try {
+                // Jalankan refresh dropdown barang sekalian
+                await muatDropdownBarang();
+                
+                const res = await fetch(`${API_URL}?action=getLaporanAdmin`);
+                const result = await res.json();
+                
+                if (result.success) {
+                    // --- RENDER HISTORI OMZET PENJUALAN ---
+                    const salesBody = document.getElementById('table-sales-body');
+                    salesBody.innerHTML = '';
+                    
+                    if (result.penjualan.length === 0) {
+                        salesBody.innerHTML = `<tr><td colspan="3" class="text-center py-8 text-slate-400">Tidak ada transaksi penjualan di Google Sheets.</td></tr>`;
+                    } else {
+                        // Urutkan transaksi dari yang paling baru (terbawah di sheet jadi teratas di web)
+                        result.penjualan.reverse().forEach(r => {
+                            salesBody.innerHTML += `
+                                <tr class="hover:bg-slate-50 transition">
+                                    <td class="p-2.5 font-mono font-bold text-indigo-950">${r.invoice_number}</td>
+                                    <td class="p-2.5"><span class="font-bold text-slate-800">${r.cashier_name}</span> <span class="text-slate-400">(${r.shift_id})</span></td>
+                                    <td class="p-2.5 text-right font-mono font-bold text-emerald-600">Rp ${parseInt(r.grand_total).toLocaleString('id-ID')}</td>
+                                </tr>`;
+                        });
+                    }
 
-                // Render Logs Audit (Observability)
-                const logsBody = document.getElementById('table-logs-body'); logsBody.innerHTML = '';
-                data.logs.reverse().forEach(l => {
-                    logsBody.innerHTML += `<tr><td class="p-2 text-slate-400">${l.timestamp}</td><td class="p-2 font-bold">${l.user_name}</td><td class="p-2 text-blue-600">${l.action}</td><td class="p-2 text-slate-600">${l.description}</td></tr>`;
-                });
+                    // --- RENDER AUDIT LOG AKTIVITAS (OBSERVABILITY) ---
+                    const logsBody = document.getElementById('table-logs-body');
+                    logsBody.innerHTML = '';
+                    
+                    if (result.logs.length === 0) {
+                        logsBody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-slate-400">Log audit kosong.</td></tr>`;
+                    } else {
+                        // Diperbaiki total dari error ketik '1 =>' menjadi variabel objek 'log' yang valid
+                        result.logs.reverse().forEach(log => {
+                            logsBody.innerHTML += `
+                                <tr class="hover:bg-slate-50 transition">
+                                    <td class="p-2 text-slate-400">${log.timestamp}</td>
+                                    <td class="p-2 font-bold text-slate-700">${log.user_name}</td>
+                                    <td class="p-2"><span class="bg-indigo-50 text-indigo-700 px-1 py-0.5 rounded text-[9px] font-bold uppercase">${log.action}</span></td>
+                                    <td class="p-2 text-slate-600 max-w-xs truncate" title="${log.description}">${log.description}</td>
+                                </tr>`;
+                        });
+                    }
+                } else {
+                    alert("Gagal menarik laporan: " + result.message);
+                }
+            } catch (error) {
+                alert("Terjadi kegagalan jaringan atau URL Apps Script diblokir oleh CORS.");
+                console.error("Error global sistem:", error);
+            } finally {
+                toggleLoading(false);
             }
         }
 
+        // 3. Kirim Perintah Penyesuaian / Stock Opname Baru ke Spreadsheet
         function eksekusiUpdateStokGudang() {
-            let barcode = document.getElementById('admin-product-select').value;
-            let stock = document.getElementById('admin-new-stock').value;
-            if(!stock) return;
+            const barcode = document.getElementById('admin-product-select').value;
+            const stock = document.getElementById('admin-new-stock').value;
+            
+            if (!stock || stock < 0) {
+                return alert("Masukkan jumlah stok fisik baru yang valid (tidak boleh minus)!");
+            }
 
-            document.body.style.opacity = "0.5";
-            fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "updateStokAdmin", barcode: barcode, stok_baru: stock }) })
-            .then(res => res.json()).then(res => {
-                document.body.style.opacity = "1";
-                alert(res.message); muatDataLaporanSistem();
+            const payload = { 
+                action: "updateStokAdmin", 
+                barcode: barcode, 
+                stok_baru: stock 
+            };
+            
+            toggleLoading(true);
+            document.body.classList.add("pointer-events-none", "opacity-60");
+
+            fetch(API_URL, { 
+                method: "POST", 
+                body: JSON.stringify(payload) 
+            })
+            .then(res => res.json())
+            .then(result => {
+                document.body.classList.remove("pointer-events-none", "opacity-60");
+                toggleLoading(false);
+                
+                if (result.success) {
+                    alert("Sukses! Dokumen Stock Opname berhasil dikunci ke database.");
+                    // Muat ulang seluruh komponen dashboard otomatis
+                    muatDataLaporanSistem();
+                } else {
+                    alert("Sistem Menolak: " + result.message);
+                }
+            })
+            .catch(error => {
+                document.body.classList.remove("pointer-events-none", "opacity-60");
+                toggleLoading(false);
+                alert("Koneksi gagal mengirim instruksi ke Apps Script.");
             });
         }
 
-        muatDataLaporanSistem();
+        // Inisialisasi muatan data otomatis saat pertama kali tab dibuka admin
+        window.addEventListener('DOMContentLoaded', () => {
+            muatDataLaporanSistem();
+        });
     </script>
 </body>
 </html>
