@@ -38,7 +38,7 @@
                     <div class="grid grid-cols-2 gap-3 text-xs">
                         <div class="col-span-2">
                             <label class="block text-slate-500 font-bold mb-1">Kode Barcode / EAN-13:</label>
-                            <input type="text" id="new-p-barcode" placeholder="Scan barcode barang atau ketik angka..." class="w-full border border-slate-200 p-2 rounded-md font-mono bg-slate-50 focus:outline-none focus:border-indigo-500">
+                            <input type="text" id="new-p-barcode" placeholder="Scan barcode atau ketik angka..." class="w-full border border-slate-200 p-2 rounded-md font-mono bg-slate-50 focus:outline-none focus:border-indigo-500">
                         </div>
                         <div class="col-span-2">
                             <label class="block text-slate-500 font-bold mb-1">Nama Lengkap Produk:</label>
@@ -66,7 +66,7 @@
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
                 <div>
                     <h2 class="text-xs font-black text-amber-700 uppercase tracking-widest mb-3 flex items-center gap-1">
-                        <span>✏️</span> Koreksi Manual Stock Opname
+                        <span>✏️</span> Manual Stock Opname
                     </h2>
                     <div class="space-y-3 text-xs">
                         <div>
@@ -87,8 +87,7 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-80">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-72">
                 <h2 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <span class="text-emerald-600">📈</span> Histori Penjualan POS (Live)
                 </h2>
@@ -101,14 +100,12 @@
                                 <th class="p-2 text-right">Omzet Jual</th>
                             </tr>
                         </thead>
-                        <tbody id="table-sales-body" class="divide-y divide-slate-100 text-slate-700">
-                            <tr><td colspan="3" class="text-center py-8 text-slate-400 italic">Menunggu sinkronisasi live data...</td></tr>
-                        </tbody>
+                        <tbody id="table-sales-body" class="divide-y divide-slate-100 text-slate-700"></tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-80">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-72">
                 <h2 class="text-xs font-black text-rose-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <span class="text-rose-600">🔒</span> Observability Activity Logs (Live)
                 </h2>
@@ -122,42 +119,66 @@
                                 <th class="p-2">Detail Keterangan</th>
                             </tr>
                         </thead>
-                        <tbody id="table-logs-body" class="divide-y divide-slate-100 font-mono text-[10px] text-slate-600">
-                            <tr><td colspan="4" class="text-center py-8 text-slate-400 italic">Menunggu sinkronisasi live data...</td></tr>
-                        </tbody>
+                        <tbody id="table-logs-body" class="divide-y divide-slate-100 font-mono text-[10px] text-slate-600"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96">
+                <h2 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <span>📦</span> Live Real-Time Master Stok Gudang
+                </h2>
+                <div class="overflow-y-auto flex-1 text-[11px]">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-900 text-white font-bold sticky top-0">
+                                <th class="p-2.5">Nama Produk</th>
+                                <th class="p-2.5 text-right">Harga Jual</th>
+                                <th class="p-2.5 text-center">Sisa Stok</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-stock-body" class="divide-y divide-slate-200 text-slate-700 font-medium"></tbody>
                     </table>
                 </div>
             </div>
 
-        </div>
-
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col">
-            <h2 class="text-xs font-black text-indigo-950 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                <span>📦</span> Live Real-Time Master Stok Gudang & Rak
-            </h2>
-            <div class="overflow-x-auto text-[11px]">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-900 text-white font-bold">
-                            <th class="p-2.5 rounded-l">Barcode</th>
-                            <th class="p-2.5">Nama Produk</th>
-                            <th class="p-2.5 text-right">Harga Modal</th>
-                            <th class="p-2.5 text-right">Harga Jual</th>
-                            <th class="p-2.5 text-center rounded-r">Sisa Stok</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-stock-body" class="divide-y divide-slate-200 text-slate-700 font-medium">
-                        <tr><td colspan="5" class="text-center py-8 text-slate-400 italic">Memuat daftar master stok barang toko...</td></tr>
-                    </tbody>
-                </table>
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-xs font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <span>📋</span> Laporan Harian Rekap Shift Kerja Kasir
+                    </h2>
+                    <div class="flex items-center gap-1 text-[11px]">
+                        <span class="text-slate-400 font-bold">Cari Tanggal:</span>
+                        <input type="date" id="filter-shift-date" onchange="renderTabelRekapShift()" class="border border-slate-300 rounded p-1 bg-white focus:outline-none focus:border-indigo-500 font-mono font-bold">
+                    </div>
+                </div>
+                <div class="overflow-y-auto flex-1 text-[11px]">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-900 text-white font-bold sticky top-0">
+                                <th class="p-2.5">ID Shift</th>
+                                <th class="p-2.5">Staf Kasir</th>
+                                <th class="p-2.5 text-right">Modal</th>
+                                <th class="p-2.5 text-right">Uang Laci</th>
+                                <th class="p-2.5 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-shifts-body" class="divide-y divide-slate-200 text-slate-600 font-mono text-[10px]">
+                            <tr><td colspan="5" class="text-center py-8 text-slate-400 italic">Memuat database rekap laporan...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzoXm9m0JnVdJpTZwWhcpklFvOFaFXW1Sqd8iyRS_IC1JJ8zKVBoPq8kUoLJir5qux3/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxBO8cdHizEKP8rpnB3_w0UGUoiGZKiS2GtH9YuGG5a2gPakUz20D6HnmaEwQWvXCYY/exec";
         let loopIntervalAktivitas;
+        let globalDataShifts = []; // Menyimpan log shift global agar bisa difilter di sisi client
 
         function toggleLoading(show) {
             document.getElementById('loading-state').classList.toggle('hidden', !show);
@@ -174,7 +195,18 @@
             }
         }
 
-        // 1. Ambil data produk untuk Dropdown & UPDATE TABEL LIVE STOK
+        // Set otomatis input cari tanggal ke tanggal hari ini saat pertama kali halaman admin dibuka
+        function setDefaultFilterDate() {
+            const inputTanggal = document.getElementById('filter-shift-date');
+            if(!inputTanggal.value) {
+                const hariIni = new Date();
+                const yyyy = hariIni.getFullYear();
+                const mm = String(hariIni.getMonth() + 1).padStart(2, '0');
+                const dd = String(hariIni.getDate()).padStart(2, '0');
+                inputTanggal.value = `${yyyy}-${mm}-${dd}`;
+            }
+        }
+
         async function muatDropdownDanTabelStok() {
             try {
                 const res = await fetch(`${API_URL}?action=getProduk`, { method: 'GET', mode: 'cors' });
@@ -186,18 +218,13 @@
                     const stockBody = document.getElementById('table-stock-body');
                     const dataArray = Array.isArray(result) ? result : result.data;
                     
-                    // Update Pilihan Dropdown Opname
                     const selectedValueBefore = select.value;
                     select.innerHTML = '';
-                    
-                    // Clear isi tabel sebelum di-render ulang
                     stockBody.innerHTML = '';
                     
                     dataArray.forEach(p => {
-                        // Render Dropdown
                         select.innerHTML += `<option value="${p.barcode}">${p.product_name} (Sisa Rak: ${p.stock})</option>`;
                         
-                        // Deteksi warna badge stok biar eye-catching jika kritis/habis
                         let stokBadgeClass = "bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-0.5 rounded";
                         if (parseInt(p.stock) === 0) {
                             stokBadgeClass = "bg-rose-100 text-rose-700 border border-rose-300 font-black px-2 py-0.5 rounded animate-bounce";
@@ -205,33 +232,24 @@
                             stokBadgeClass = "bg-amber-50 text-amber-700 border border-amber-200 font-bold px-2 py-0.5 rounded";
                         }
 
-                        // Render Baris Tabel Live Stok Baru
                         stockBody.innerHTML += `
                             <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                                <td class="p-2.5 font-mono text-slate-400">${p.barcode}</td>
                                 <td class="p-2.5 font-bold text-slate-900">${p.product_name}</td>
-                                <td class="p-2.5 text-right text-slate-500 font-mono">Rp ${parseInt(p.cost_price || 0).toLocaleString('id-ID')}</td>
                                 <td class="p-2.5 text-right text-indigo-700 font-mono font-bold">Rp ${parseInt(p.selling_price || 0).toLocaleString('id-ID')}</td>
-                                <td class="p-2.5 text-center">
-                                    <span class="${stokBadgeClass}">${p.stock} Item</span>
-                                </td>
+                                <td class="p-2.5 text-center"><span class="${stokBadgeClass}">${p.stock} Pcs</span></td>
                             </tr>`;
                     });
-                    
                     if(selectedValueBefore) select.value = selectedValueBefore;
                 }
-            } catch (error) {
-                console.error("Gagal memuat katalog barang:", error);
-            }
+            } catch (error) { console.error(error); }
         }
 
-        // 2. Ambil Laporan Komprehensif
         async function muatDataLaporanSistem(pakeSpinner = false) {
             if(pakeSpinner) toggleLoading(true);
             setIndicatorStatus(true);
+            setDefaultFilterDate();
             
             try {
-                // Tarik data stok barang sekalian render tabelnya
                 await muatDropdownDanTabelStok();
                 
                 const res = await fetch(`${API_URL}?action=getLaporanAdmin`, { method: 'GET', mode: 'cors' });
@@ -239,50 +257,71 @@
                 const result = JSON.parse(txt);
                 
                 if (result.success || result.penjualan) {
-                    // --- RENDER HISTORI OMZET PENJUALAN ---
+                    // --- HISTORI PENJUALAN ---
                     const salesBody = document.getElementById('table-sales-body');
                     salesBody.innerHTML = '';
-                    
-                    if (!result.penjualan || result.penjualan.length === 0) {
-                        salesBody.innerHTML = `<tr><td colspan="3" class="text-center py-8 text-slate-400">Tidak ada transaksi penjualan di Google Sheets.</td></tr>`;
-                    } else {
-                        result.penjualan.reverse().forEach(r => {
-                            salesBody.innerHTML += `
-                                <tr class="hover:bg-slate-50 transition">
-                                    <td class="p-2.5 font-mono font-bold text-indigo-950">${r.invoice_number}</td>
-                                    <td class="p-2.5"><span class="font-bold text-slate-800">${r.cashier_name}</span> <span class="text-slate-400">(${r.shift_id})</span></td>
-                                    <td class="p-2.5 text-right font-mono font-bold text-emerald-600">Rp ${parseInt(r.grand_total).toLocaleString('id-ID')}</td>
-                                </tr>`;
-                        });
-                    }
+                    result.penjualan.reverse().forEach(r => {
+                        salesBody.innerHTML += `
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="p-2 font-mono font-bold text-indigo-950">${r.invoice_number}</td>
+                                <td class="p-2"><strong>${r.cashier_name}</strong> (${r.shift_id})</td>
+                                <td class="p-2 text-right font-mono font-bold text-emerald-600">Rp ${parseInt(r.grand_total).toLocaleString('id-ID')}</td>
+                            </tr>`;
+                    });
 
-                    // --- RENDER AUDIT LOG AKTIVITAS ---
+                    // --- AUDIT LOG AKTIVITAS ---
                     const logsBody = document.getElementById('table-logs-body');
                     logsBody.innerHTML = '';
-                    
-                    if (!result.logs || result.logs.length === 0) {
-                        logsBody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-slate-400">Log audit kosong.</td></tr>`;
-                    } else {
-                        result.logs.reverse().forEach(log => {
-                            logsBody.innerHTML += `
-                                <tr class="hover:bg-slate-50 transition">
-                                    <td class="p-2 text-slate-400">${log.timestamp}</td>
-                                    <td class="p-2 font-bold text-slate-700">${log.user_name}</td>
-                                    <td class="p-2"><span class="bg-indigo-50 text-indigo-700 px-1 py-0.5 rounded text-[9px] font-bold uppercase">${log.action}</span></td>
-                                    <td class="p-2 text-slate-600 max-w-xs truncate" title="${log.description}">${log.description}</td>
-                                </tr>`;
-                        });
-                    }
+                    result.logs.reverse().forEach(log => {
+                        logsBody.innerHTML += `
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="p-2 text-slate-400">${log.timestamp}</td>
+                                <td class="p-2 font-bold text-slate-700">${log.user_name}</td>
+                                <td class="p-2"><span class="bg-indigo-50 text-indigo-700 px-1 py-0.5 rounded text-[9px] font-bold uppercase">${log.action}</span></td>
+                                <td class="p-2 text-slate-600 max-w-xs truncate">${log.description}</td>
+                            </tr>`;
+                    });
+
+                    // Simpan data shift ke global array untuk kebutuhan filter harian
+                    globalDataShifts = result.shifts || [];
+                    renderTabelRekapShift();
                 }
-            } catch (error) {
-                console.error("Error global sistem:", error);
-            } finally {
+            } catch (error) { console.error(error); } finally {
                 if(pakeSpinner) toggleLoading(false);
                 setIndicatorStatus(false);
             }
         }
 
-        // 3. Eksekusi Kirim Data Master Produk Baru ke Google Sheets
+        // FUNGSI BARU: Menyaring data rekap shift berdasarkan tanggal pilihan owner harian
+        function renderTabelRekapShift() {
+            const shiftsBody = document.getElementById('table-shifts-body');
+            shiftsBody.innerHTML = '';
+            
+            const tanggalTarget = document.getElementById('filter-shift-date').value.trim(); // Format: YYYY-MM-DD
+            
+            // Saring data shift yang tanggalnya COCOK dengan kolom Tanggal di spreadsheet
+            const dataTerfilter = globalDataShifts.filter(s => s.tanggal && s.tanggal.toString().trim() === tanggalTarget);
+            
+            if (dataTerfilter.length === 0) {
+                shiftsBody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400 italic">Tidak ada rekap aktivitas shift kasir pada tanggal ${tanggalTarget}.</td></tr>`;
+                return;
+            }
+            
+            dataTerfilter.reverse().forEach(s => {
+                let statusStyle = s.status === "open" ? "bg-blue-50 text-blue-700 border border-blue-200 animate-pulse" : "bg-slate-100 text-slate-600 border border-slate-300 font-bold";
+                shiftsBody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-2.5 font-bold text-indigo-950">${s.shift_id}</td>
+                        <td class="p-2.5 text-slate-900 font-bold">${s.cashier_name}</td>
+                        <td class="p-2.5 text-right text-slate-500">Rp ${parseInt(s.starting_cash || 0).toLocaleString('id-ID')}</td>
+                        <td class="p-2.5 text-right font-bold ${s.status === 'open' ? 'text-slate-400 italic' : 'text-emerald-700'}">
+                            ${s.status === 'open' ? 'Masih Open' : 'Rp ' + parseInt(s.actual_cash || 0).toLocaleString('id-ID')}
+                        </td>
+                        <td class="p-2.5 text-center"><span class="px-1.5 py-0.5 rounded text-[9px] uppercase ${statusStyle}">${s.status}</span></td>
+                    </tr>`;
+            });
+        }
+
         function eksekusiTambahProdukBaru() {
             const barcode = document.getElementById('new-p-barcode').value.trim();
             const name = document.getElementById('new-p-name').value.trim();
@@ -290,19 +329,9 @@
             const selling = document.getElementById('new-p-selling').value;
             const stock = document.getElementById('new-p-stock').value;
             
-            if(!barcode || !name || cost < 0 || selling <= 0 || stock < 0) {
-                return alert("Mohon lengkapi formulir produk baru dengan valid!");
-            }
+            if(!barcode || !name || cost < 0 || selling <= 0 || stock < 0) return alert("Form tidak valid!");
 
-            const payload = { 
-                action: "tambahProdukAdmin", 
-                barcode: barcode, 
-                product_name: name,
-                cost_price: cost,
-                selling_price: selling,
-                stock: stock
-            };
-            
+            const payload = { action: "tambahProdukAdmin", barcode: barcode, product_name: name, cost_price: cost, selling_price: selling, stock: stock };
             toggleLoading(true);
             document.body.classList.add("pointer-events-none", "opacity-60");
 
@@ -311,38 +340,21 @@
             .then(result => {
                 document.body.classList.remove("pointer-events-none", "opacity-60");
                 toggleLoading(false);
-                
                 if (result.success) {
                     alert(result.message);
                     document.getElementById('new-p-barcode').value = "";
                     document.getElementById('new-p-name').value = "";
-                    document.getElementById('new-p-cost').value = 0;
-                    document.getElementById('new-p-selling').value = 0;
-                    document.getElementById('new-p-stock').value = 10;
-                    
                     muatDataLaporanSistem(true);
-                } else {
-                    alert("Gagal menyimpan: " + result.message);
-                }
-            })
-            .catch(error => {
-                document.body.classList.remove("pointer-events-none", "opacity-60");
-                toggleLoading(false);
-                alert("Gagal terhubung ke server untuk mendaftarkan barang baru.");
-            });
+                } else { alert(result.message); }
+            }).catch(() => { toggleLoading(false); document.body.classList.remove("pointer-events-none"); });
         }
 
-        // 4. Kirim Perintah Penyesuaian Stock Opname Existing
         function eksekusiUpdateStokGudang() {
             const barcode = document.getElementById('admin-product-select').value;
             const stock = document.getElementById('admin-new-stock').value;
-            
-            if (!barcode || !stock || stock < 0) {
-                return alert("Pilih barang dan isi jumlah stok fisik yang valid!");
-            }
+            if (!barcode || stock < 0) return alert("Isi jumlah stok fisik!");
 
             const payload = { action: "updateStokAdmin", barcode: barcode, stok_baru: stock };
-            
             toggleLoading(true);
             document.body.classList.add("pointer-events-none", "opacity-60");
 
@@ -351,30 +363,15 @@
             .then(result => {
                 document.body.classList.remove("pointer-events-none", "opacity-60");
                 toggleLoading(false);
-                
-                if (result.success) {
-                    alert("Sukses! Dokumen Stock Opname berhasil diperbarui.");
-                    muatDataLaporanSistem(true);
-                } else {
-                    alert("Sistem Menolak: " + result.message);
-                }
-            })
-            .catch(error => {
-                document.body.classList.remove("pointer-events-none", "opacity-60");
-                toggleLoading(false);
-                alert("Koneksi gagal mengirim instruksi.");
-            });
+                if (result.success) { alert("Sukses update stok!"); muatDataLaporanSistem(true); }
+            }).catch(() => { toggleLoading(false); document.body.classList.remove("pointer-events-none"); });
         }
 
-        // TIMER PINTAR: Mengaktifkan fungsi auto-refresh data setiap 25 detik sekali secara otomatis
         function aktifkanLiveAutoSync() {
             if(loopIntervalAktivitas) clearInterval(loopIntervalAktivitas);
-            
             loopIntervalAktivitas = setInterval(() => {
-                if (!document.hidden) {
-                    muatDataLaporanSistem(false); 
-                }
-            }, 25000);
+                if (!document.hidden) { muatDataLaporanSistem(false); }
+            }, 25000); 
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -383,9 +380,7 @@
         });
 
         document.addEventListener("visibilitychange", () => {
-            if (!document.hidden) {
-                muatDataLaporanSistem(false);
-            }
+            if (!document.hidden) { muatDataLaporanSistem(false); }
         });
     </script>
 </body>
