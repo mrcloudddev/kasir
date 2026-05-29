@@ -34,11 +34,11 @@
                         <span class="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
                         <input type="text" id="search_input" oninput="filterKatalog()" onkeypress="handleBarcodeScan(event)" placeholder="Scan Barcode / Ketik Nama Produk di sini..." class="w-full bg-white border border-slate-300 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:border-indigo-500 font-medium">
                     </div>
-                    <button onclick="clearSearch()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-3 py-2 rounded-lg font-bold transition">Clear</button>
-                    <button onclick="muatKatalogBarang()" class="bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs px-3 py-2 rounded-lg font-medium transition">🔄 Sync Stok</button>
+                    <button onclick="clearSearch()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-3 py-2 rounded-lg font-bold transition cursor-pointer">Clear</button>
+                    <button onclick="muatKatalogBarang()" class="bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs px-3 py-2 rounded-lg font-medium transition cursor-pointer">🔄 Sync Stok</button>
                 </div>
                 <div class="text-[10px] text-slate-400 font-semibold italic flex justify-between px-1">
-                    <span>*Arahkan kursor ke kotak atas untuk mulai menembak alat barcode</span>
+                    <span>*Arahkan kursor ke kotak atas untuk ketik manual atau pakai alat barcode scanner</span>
                     <span id="loading-catalog" class="hidden text-amber-600 animate-pulse">Menghubungkan database...</span>
                 </div>
             </div>
@@ -51,7 +51,7 @@
             <div>
                 <div class="flex justify-between items-center mb-3">
                     <h2 class="font-bold text-slate-700 text-sm uppercase">Keranjang Kasir</h2>
-                    <button onclick="holdNota()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs px-2.5 py-1 rounded font-bold transition">Hold Nota</button>
+                    <button onclick="holdNota()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs px-2.5 py-1 rounded font-bold transition cursor-pointer">Hold Nota</button>
                 </div>
                 <div class="border-y border-slate-100 max-h-56 overflow-y-auto py-1" id="cart-container">
                     <p class="text-slate-400 text-center py-6 text-xs">Keranjang belanja kosong.</p>
@@ -85,7 +85,7 @@
                     </div>
                 </div>
 
-                <button onclick="prosesCheckout()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg text-xs tracking-widest uppercase transition shadow-md">
+                <button onclick="prosesCheckout()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg text-xs tracking-widest uppercase transition shadow-md cursor-pointer">
                     Bayar & Potong Stok
                 </button>
             </div>
@@ -114,19 +114,18 @@
                 }
             } catch(e) {
                 console.error("Koneksi bermasalah saat memuat produk:", e);
-            } finaly {
+            } finally {
                 document.getElementById('loading-catalog').classList.add('hidden');
-                focusSearchInput(); // Selalu fokuskan kursor kembali
+                focusSearchInput();
             }
         }
 
-        // Render Katalog menerima parameter array agar bisa difilter saat pencarian teks
         function renderKatalog(produkList) {
             const container = document.getElementById('katalog-container');
             container.innerHTML = '';
             
-            if (produkList.length === 0) {
-                container.innerHTML = '<p class="text-slate-400 text-xs col-span-3 text-center py-6">Produk tidak ditemukan...</p>';
+            if (!produkList || produkList.length === 0) {
+                container.innerHTML = '<p class="text-slate-400 text-xs col-span-3 text-center py-6 italic">Produk tidak ditemukan...</p>';
                 return;
             }
 
@@ -145,32 +144,33 @@
             });
         }
 
-        // FITUR 1: Pencarian realtime berdasarkan ketikan nama produk / barcode
+        // BUGFIX MUTLAK PENCARIAN MANUAL: Dipaksa konversi string agar pencarian sensitif teks huruf besar/kecil tetap sinkron
         function filterKatalog() {
             const keyword = document.getElementById('search_input').value.toLowerCase().trim();
             if (keyword === "") {
                 renderKatalog(masterProduk);
                 return;
             }
-            const hasilFilter = masterProduk.filter(p => 
-                p.product_name.toLowerCase().includes(keyword) || 
-                p.barcode.toString().includes(keyword)
-            );
+            
+            const hasilFilter = masterProduk.filter(p => {
+                const namaProdukStr = p.product_name ? p.product_name.toString().toLowerCase() : "";
+                const barcodeStr = p.barcode ? p.barcode.toString().toLowerCase() : "";
+                return namaProdukStr.includes(keyword) || barcodeStr.includes(keyword);
+            });
+            
             renderKatalog(hasilFilter);
         }
 
-        // FITUR 2: Otomatis deteksi tembakan Alat Barcode Scanner (Event Enter)
         function handleBarcodeScan(event) {
             if (event.key === "Enter") { 
-                event.preventDefault(); // Mencegah form ke-refresh otomatis
+                event.preventDefault(); 
                 const barcodeValue = document.getElementById('search_input').value.trim();
                 
-                // Cari apakah ada barcode yang cocok persis di list produk
                 let produkDitemukan = masterProduk.find(p => p.barcode.toString() === barcodeValue);
                 
                 if (produkDitemukan) {
                     tambahKeCart(produkDitemukan.barcode);
-                    clearSearch(); // Kosongkan kotak pencarian agar siap di-scan lagi
+                    clearSearch();
                 } else {
                     alert("Barang dengan kode barcode '" + barcodeValue + "' tidak terdaftar!");
                 }
