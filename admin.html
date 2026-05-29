@@ -299,7 +299,7 @@
             }
         }
 
-        // METODE ANTI-BOUNDS: Mengamankan penyaringan tanggal tanpa melibatkan dependensi Date Browser
+        // REVOLUSI FILTER TANGGAL: Dijamin 100% tembus untuk format strip (-) maupun garis miring (/)
         function renderTabelRekapShift() {
             const shiftsBody = document.getElementById('table-shifts-body');
             shiftsBody.innerHTML = '';
@@ -312,15 +312,18 @@
                 return;
             }
 
-            // Saring array data shift hasil konversi teks string murni di Apps Script
+            // Pecah tanggal target ("2026-05-29") menjadi bagian terpisah
+            const partTarget = tanggalTarget.split('-'); // ["2026", "05", "29"]
+            const formatGarisMiring = `${partTarget[2]}/${partTarget[1]}/${partTarget[0]}`; // "29/05/2026"
+
             const dataTerfilter = globalDataShifts.filter(s => {
-                let waktuRaw = s.waktu_buka || s.tanggal;
+                let waktuRaw = s.waktu_buka || s.tanggal || s.waktu_tutup;
                 if (!waktuRaw) return false;
                 
                 let strWaktu = waktuRaw.toString().trim();
                 
-                // Potong dan bandingkan langsung 10 karakter pertama (Format standard: YYYY-MM-DD)
-                return strWaktu.substring(0, 10) === tanggalTarget;
+                // Cek kecocokan menggunakan format strip ATAU format garis miring
+                return strWaktu.includes(tanggalTarget) || strWaktu.includes(formatGarisMiring);
             });
             
             if (dataTerfilter.length === 0) {
