@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Control Center (Dashboard Mode)</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body class="bg-slate-50 font-sans min-h-screen">
 
@@ -143,7 +142,7 @@
                 </div>
             </div>
 
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96" id="area-pdf-laporan">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96 print-area-container" id="area-pdf-laporan">
                 <div class="flex flex-col mb-3 border-b border-slate-100 pb-2 gap-2">
                     <div class="flex justify-between items-center">
                         <h2 class="text-xs font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">
@@ -168,9 +167,9 @@
                 </div>
                 
                 <div class="overflow-y-auto flex-1 text-[11px] p-1">
-                    <div class="hidden show-in-pdf mb-4 text-center border-b-2 border-slate-900 pb-2">
-                        <h3 class="text-base font-black text-slate-900 uppercase">LAPORAN HARIAN REKAP KASIR OPERASIONAL</h3>
-                        <p class="text-xs font-mono text-slate-500 font-bold">Tanggal Laporan: <span id="pdf-date-title"></span></p>
+                    <div class="show-only-on-pdf mb-4 text-center border-b-2 border-slate-950 pb-2">
+                        <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider">REKAP OPERASIONAL HARIAN LAPORAN SHIFT KASIR</h3>
+                        <p class="text-[10px] font-mono text-slate-500 font-bold">Tanggal Audit: <span id="pdf-date-title"></span></p>
                     </div>
 
                     <table class="w-full text-left border-collapse">
@@ -310,7 +309,7 @@
             const shiftsBody = document.getElementById('table-shifts-body');
             shiftsBody.innerHTML = '';
             
-            const tanggalTarget = document.getElementById('filter-shift-date').value.trim(); // "2026-05-29"
+            const tanggalTarget = document.getElementById('filter-shift-date').value.trim(); 
             document.getElementById('pdf-date-title').innerText = tanggalTarget;
             document.getElementById('label-date-view').innerText = tanggalTarget;
             
@@ -320,7 +319,6 @@
                 return;
             }
 
-            // Memfilter database shift menggunakan parameter start_time terstruktur
             const dataTerfilter = globalDataShifts.filter(s => {
                 let waktuAsli = s.start_time || s.waktu_buka || s.tanggal;
                 if (!waktuAsli) return false;
@@ -337,7 +335,7 @@
             }
             
             dataTerfilter.reverse().forEach(s => {
-                let statusStyle = s.status === "open" ? "bg-blue-50 text-blue-700 border border-blue-200 animate-pulse animate-print-static" : "bg-slate-100 text-slate-600 border border-slate-300 font-bold";
+                let statusStyle = s.status === "open" ? "bg-blue-50 text-blue-700 border border-blue-200 animate-pulse font-bold" : "bg-slate-100 text-slate-600 border border-slate-300 font-bold";
                 shiftsBody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="p-2.5 font-bold text-indigo-950">${s.shift_id}</td>
@@ -351,24 +349,13 @@
             });
         }
 
-        // FIX FINISHED: Engine Download PDF Instan Tanpa Blok Validasi
+        // ENGINE PINTAR BARU: Memanggil menu Print native browser (100% Anti-Gagal)
         function unduhLaporanHarianPDF() {
-            const tanggalTarget = document.getElementById('filter-shift-date').value.trim();
-            const elementLaporan = document.getElementById('area-pdf-laporan');
-            
             if(document.getElementById('table-shifts-body').innerText.includes('Tidak ada rekap')) {
-                return alert("Gagal mengunduh! Tidak ada data laporan rekap shift yang tersedia pada tanggal ini.");
+                return alert("Gagal mencetak! Tidak ada data laporan rekap shift yang tersedia pada tanggal ini.");
             }
-
-            const opsiSetelanDoc = {
-                margin:       [10, 15, 10, 15],
-                filename:     `Laporan_Harian_POS_${tanggalTarget}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opsiSetelanDoc).from(elementLaporan).save();
+            // Panggil jendela dialog cetak/simpan PDF resmi dari sistem OS/Browser
+            window.print();
         }
 
         function eksekusiTambahProdukBaru() {
@@ -434,11 +421,25 @@
     </script>
 
     <style>
-        .show-in-pdf { display: none; }
+        .show-only-on-pdf { display: none; }
+        
         @media print {
+            /* Sembunyikan semua elemen selain tabel laporan harian kasir */
             .media-no-print { display: none !important; }
-            .show-in-pdf { display: block !important; }
-            .animate-print-static { animation: none !important; opacity: 1 !important; }
+            body { background-color: #ffffff !important; padding: 0 !important; }
+            
+            /* Paksa tabel rekap mengambil porsi layar penuh kertas A4 */
+            .print-area-container {
+                width: 100% !important;
+                max-width: 100% !important;
+                border: none !important;
+                box-shadow: none !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                height: auto !important;
+            }
+            .show-only-on-pdf { display: block !important; }
         }
     </style>
 </body>
