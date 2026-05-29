@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Control Center (Dashboard Mode)</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body class="bg-slate-50 font-sans min-h-screen">
 
-    <header class="bg-indigo-900 text-white p-4 shadow-md flex justify-between items-center">
+    <header class="bg-indigo-900 text-white p-4 shadow-md flex justify-between items-center media-no-print">
         <div class="flex items-center gap-3">
             <h1 class="text-xl font-bold tracking-wide">👑 SYSTEM CONTROL PANEL (ADMIN ONLY)</h1>
         </div>
@@ -24,12 +25,11 @@
 
     <div class="p-6 max-w-7xl mx-auto space-y-6">
         
-        <div id="loading-state" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-lg font-semibold">
+        <div id="loading-state" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-lg font-semibold media-no-print">
             Sedang berkomunikasi dengan database terpusat...
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 media-no-print">
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
                 <div>
                     <h2 class="text-xs font-black text-indigo-700 uppercase tracking-widest mb-3 flex items-center gap-1">
@@ -83,10 +83,9 @@
                     Update Stok Utama
                 </button>
             </div>
-
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 media-no-print">
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-72">
                 <h2 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <span class="text-emerald-600">📈</span> Histori Penjualan POS (Live)
@@ -126,7 +125,7 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96 media-no-print">
                 <h2 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <span>📦</span> Live Real-Time Master Stok Gudang
                 </h2>
@@ -144,17 +143,29 @@
                 </div>
             </div>
 
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96">
-                <div class="flex justify-between items-center mb-3">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96" id="area-pdf-laporan">
+                <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-2">
                     <h2 class="text-xs font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">
                         <span>📋</span> Laporan Harian Rekap Shift Kerja Kasir
                     </h2>
-                    <div class="flex items-center gap-1 text-[11px]">
-                        <span class="text-slate-400 font-bold">Cari Tanggal:</span>
-                        <input type="date" id="filter-shift-date" onchange="renderTabelRekapShift()" class="border border-slate-300 rounded p-1 bg-white focus:outline-none focus:border-indigo-500 font-mono font-bold">
+                    
+                    <div class="flex items-center gap-2 text-[11px] media-no-print">
+                        <div class="flex items-center gap-1">
+                            <span class="text-slate-400 font-bold">Tanggal:</span>
+                            <input type="date" id="filter-shift-date" onchange="renderTabelRekapShift()" class="border border-slate-300 rounded p-1 bg-white focus:outline-none focus:border-indigo-500 font-mono font-bold">
+                        </div>
+                        <button onclick="unduhLaporanHarianPDF()" class="bg-rose-600 hover:bg-rose-700 text-white font-black px-2.5 py-1.5 rounded flex items-center gap-1 cursor-pointer transition shadow-2xs">
+                            📥 Unduh PDF
+                        </button>
                     </div>
                 </div>
-                <div class="overflow-y-auto flex-1 text-[11px]">
+                
+                <div class="overflow-y-auto flex-1 text-[11px] p-1">
+                    <div class="hidden show-in-pdf mb-4 text-center border-b-2 border-slate-900 pb-2">
+                        <h3 class="text-base font-black text-slate-900 uppercase">LAPORAN HARIAN REKAP KASIR OPERASIONAL</h3>
+                        <p class="text-xs font-mono text-slate-500 font-bold">Tanggal Laporan: <span id="pdf-date-title"></span></p>
+                    </div>
+
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-900 text-white font-bold sticky top-0">
@@ -178,7 +189,7 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxBO8cdHizEKP8rpnB3_w0UGUoiGZKiS2GtH9YuGG5a2gPakUz20D6HnmaEwQWvXCYY/exec";
         let loopIntervalAktivitas;
-        let globalDataShifts = []; // Menyimpan log shift global agar bisa difilter di sisi client
+        let globalDataShifts = [];
 
         function toggleLoading(show) {
             document.getElementById('loading-state').classList.toggle('hidden', !show);
@@ -195,7 +206,6 @@
             }
         }
 
-        // Set otomatis input cari tanggal ke tanggal hari ini saat pertama kali halaman admin dibuka
         function setDefaultFilterDate() {
             const inputTanggal = document.getElementById('filter-shift-date');
             if(!inputTanggal.value) {
@@ -257,7 +267,6 @@
                 const result = JSON.parse(txt);
                 
                 if (result.success || result.penjualan) {
-                    // --- HISTORI PENJUALAN ---
                     const salesBody = document.getElementById('table-sales-body');
                     salesBody.innerHTML = '';
                     result.penjualan.reverse().forEach(r => {
@@ -269,7 +278,6 @@
                             </tr>`;
                     });
 
-                    // --- AUDIT LOG AKTIVITAS ---
                     const logsBody = document.getElementById('table-logs-body');
                     logsBody.innerHTML = '';
                     result.logs.reverse().forEach(log => {
@@ -282,7 +290,6 @@
                             </tr>`;
                     });
 
-                    // Simpan data shift ke global array untuk kebutuhan filter harian
                     globalDataShifts = result.shifts || [];
                     renderTabelRekapShift();
                 }
@@ -292,15 +299,20 @@
             }
         }
 
-        // FUNGSI BARU: Menyaring data rekap shift berdasarkan tanggal pilihan owner harian
+        // BUGFIX MUTLAK LOGIKA FILTERING TANGGAL (Penyamaan Struktur Karakter ISO String Google Sheets)
         function renderTabelRekapShift() {
             const shiftsBody = document.getElementById('table-shifts-body');
             shiftsBody.innerHTML = '';
             
-            const tanggalTarget = document.getElementById('filter-shift-date').value.trim(); // Format: YYYY-MM-DD
+            const tanggalTarget = document.getElementById('filter-shift-date').value.trim(); // Output: "2026-05-29"
+            document.getElementById('pdf-date-title').innerText = tanggalTarget;
             
-            // Saring data shift yang tanggalnya COCOK dengan kolom Tanggal di spreadsheet
-            const dataTerfilter = globalDataShifts.filter(s => s.tanggal && s.tanggal.toString().trim() === tanggalTarget);
+            // Konversi dan potong 10 karakter pertama (YYYY-MM-DD) dari kolom waktu_buka/tanggal spreadsheet
+            const dataTerfilter = globalDataShifts.filter(s => {
+                if (!s.waktu_buka) return false;
+                const tanggalSheetRaw = s.waktu_buka.toString().substring(0, 10); 
+                return tanggalSheetRaw === tanggalTarget;
+            });
             
             if (dataTerfilter.length === 0) {
                 shiftsBody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400 italic">Tidak ada rekap aktivitas shift kasir pada tanggal ${tanggalTarget}.</td></tr>`;
@@ -308,18 +320,33 @@
             }
             
             dataTerfilter.reverse().forEach(s => {
-                let statusStyle = s.status === "open" ? "bg-blue-50 text-blue-700 border border-blue-200 animate-pulse" : "bg-slate-100 text-slate-600 border border-slate-300 font-bold";
+                let statusStyle = s.status === "open" ? "bg-blue-50 text-blue-700 border border-blue-200 animate-pulse animate-print-static" : "bg-slate-100 text-slate-600 border border-slate-300 font-bold";
                 shiftsBody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="p-2.5 font-bold text-indigo-950">${s.shift_id}</td>
                         <td class="p-2.5 text-slate-900 font-bold">${s.cashier_name}</td>
                         <td class="p-2.5 text-right text-slate-500">Rp ${parseInt(s.starting_cash || 0).toLocaleString('id-ID')}</td>
-                        <td class="p-2.5 text-right font-bold ${s.status === 'open' ? 'text-slate-400 italic' : 'text-emerald-700'}">
-                            ${s.status === 'open' ? 'Masih Open' : 'Rp ' + parseInt(s.actual_cash || 0).toLocaleString('id-ID')}
+                        <td class="p-2.5 text-right font-bold ${s.status === 'open' ? 'text-blue-500 italic font-medium' : 'text-emerald-700'}">
+                            ${s.status === 'open' ? 'Sedang Buka' : 'Rp ' + parseInt(s.actual_cash || 0).toLocaleString('id-ID')}
                         </td>
                         <td class="p-2.5 text-center"><span class="px-1.5 py-0.5 rounded text-[9px] uppercase ${statusStyle}">${s.status}</span></td>
                     </tr>`;
             });
+        }
+
+        function unduhLaporanHarianPDF() {
+            const tanggalTarget = document.getElementById('filter-shift-date').value.trim();
+            const elementLaporan = document.getElementById('area-pdf-laporan');
+            
+            const opsiSetelanDoc = {
+                margin:       [15, 15, 15, 15],
+                filename:     `Laporan_Harian_POS_${tanggalTarget}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opsiSetelanDoc).from(elementLaporan).save();
         }
 
         function eksekusiTambahProdukBaru() {
@@ -383,5 +410,14 @@
             if (!document.hidden) { muatDataLaporanSistem(false); }
         });
     </script>
+
+    <style>
+        .show-in-pdf { display: none; }
+        @media print {
+            .media-no-print { display: none !important; }
+            .show-in-pdf { display: block !important; }
+            .animate-print-static { animation: none !important; opacity: 1 !important; }
+        }
+    </style>
 </body>
 </html>
