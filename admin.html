@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Control Center (Dashboard Mode)</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-50 font-sans min-h-screen">
+
+    <header class="bg-indigo-900 text-white p-4 shadow-md flex justify-between items-center">
+        <h1 class="text-lg font-black tracking-wider text-indigo-200">👑 SYSTEM CONTROL PANEL (ADMIN ONLY)</h1>
+        <button onclick="muatDataLaporanSistem()" class="bg-indigo-700 hover:bg-indigo-600 text-xs px-3 py-1.5 rounded-md font-bold transition">🔄 Refresh Semua Data</button>
+    </header>
+
+    <div class="p-6 max-w-7xl mx-auto space-y-6">
+        
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs max-w-md">
+            <h2 class="text-xs font-black text-indigo-700 uppercase tracking-widest mb-3">Koreksi Manual Stock Opname</h2>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-500 font-bold mb-1">Pilih Produk:</label>
+                    <select id="admin-product-select" class="w-full border border-slate-200 p-2 rounded-md bg-slate-50 font-bold focus:outline-none"></select>
+                </div>
+                <div>
+                    <label class="block text-slate-500 font-bold mb-1">Isi Stok Fisik Baru:</label>
+                    <input type="number" id="admin-new-stock" value="10" class="w-full border border-slate-200 p-2 rounded-md text-center text-lg font-mono font-bold focus:outline-none">
+                </div>
+                <button onclick="eksekusiUpdateStokGudang()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-md transition uppercase text-xs">Update Stok Utama</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs">
+                <h2 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-3">Histori Penjualan POS</h2>
+                <div class="overflow-x-auto max-h-64 text-[11px]">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold">
+                                <th class="p-2">Invoice</th><th class="p-2">Kasir</th><th class="p-2 text-right">Omzet</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-sales-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs">
+                <h2 class="text-xs font-black text-rose-700 uppercase tracking-wider mb-3">Observability Activity Logs (Audit)</h2>
+                <div class="overflow-x-auto max-h-64 text-[11px]">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold">
+                                <th class="p-2">Waktu</th><th class="p-2">User</th><th class="p-2">Aksi</th><th class="p-2">Detail Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-logs-body" class="divide-y divide-slate-100 font-mono text-[10px]"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxeIDsVJw2-EWsMGIqa_Tz2IzYG-_GJGnYfTmeuj1Dc2_ruvQ6_NdBcukjr4WoWIbwJ/exec"; // Gunakan URL Web App GAS Anda
+
+        async function muatDropdownBarang() {
+            const res = await fetch(`${API_URL}?action=getProduk`);
+            const data = await res.json();
+            if(data.success) {
+                const select = document.getElementById('admin-product-select'); select.innerHTML = '';
+                data.data.forEach(p => select.innerHTML += `<option value="${p.barcode}">${p.product_name} (Sisa Rak: ${p.stock})</option>`);
+            }
+        }
+
+        async function muatDataLaporanSistem() {
+            muatDropdownBarang();
+            const res = await fetch(`${API_URL}?action=getLaporanAdmin`);
+            const data = await res.json();
+            if(data.success) {
+                // Render Omzet Penjualan
+                const salesBody = document.getElementById('table-sales-body'); salesBody.innerHTML = '';
+                data.penjualan.reverse().forEach(r => {
+                    salesBody.innerHTML += `<tr><td class="p-2 font-bold font-mono text-indigo-900">${r.invoice_number}</td><td class="p-2">${r.cashier_name}</td><td class="p-2 text-right font-bold text-emerald-600">Rp ${parseInt(r.grand_total).toLocaleString('id-ID')}</td></tr>`;
+                });
+
+                // Render Logs Audit (Observability)
+                const logsBody = document.getElementById('table-logs-body'); logsBody.innerHTML = '';
+                data.logs.reverse().forEach(l => {
+                    logsBody.innerHTML += `<tr><td class="p-2 text-slate-400">${l.timestamp}</td><td class="p-2 font-bold">${l.user_name}</td><td class="p-2 text-blue-600">${l.action}</td><td class="p-2 text-slate-600">${l.description}</td></tr>`;
+                });
+            }
+        }
+
+        function eksekusiUpdateStokGudang() {
+            let barcode = document.getElementById('admin-product-select').value;
+            let stock = document.getElementById('admin-new-stock').value;
+            if(!stock) return;
+
+            document.body.style.opacity = "0.5";
+            fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "updateStokAdmin", barcode: barcode, stok_baru: stock }) })
+            .then(res => res.json()).then(res => {
+                document.body.style.opacity = "1";
+                alert(res.message); muatDataLaporanSistem();
+            });
+        }
+
+        muatDataLaporanSistem();
+    </script>
+</body>
+</html>
