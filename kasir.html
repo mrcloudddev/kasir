@@ -6,7 +6,7 @@
     <title>POS Kasir (User Interface)</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="bg-gray-100 font-sans h-screen flex flex-col">
+<body class="bg-gray-100 font-sans h-screen flex flex-col relative">
 
     <header class="bg-slate-900 text-white p-4 flex flex-col md:flex-row justify-between items-center gap-3 shadow-md">
         <h1 class="text-base font-black tracking-wider text-emerald-400">🛒 POS TERMINAL KASIR</h1>
@@ -21,6 +21,7 @@
             </div>
             <button onclick="controlShift('buka')" class="bg-blue-600 hover:bg-blue-700 px-2.5 py-1 rounded font-bold transition cursor-pointer ml-1">Buka Shift</button>
             <button onclick="controlShift('tutup')" class="bg-rose-600 hover:bg-rose-700 px-2.5 py-1 rounded font-bold transition cursor-pointer">Tutup Shift</button>
+            <button onclick="bukaModalRekap()" class="bg-amber-500 hover:bg-amber-600 px-2.5 py-1 rounded font-bold transition cursor-pointer flex items-center gap-1 text-slate-950 shadow-sm">📋 Rekap Shift</button>
         </div>
     </header>
 
@@ -92,6 +93,35 @@
         </div>
     </div>
 
+    <div id="modal-rekap" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl border border-slate-200 w-full max-w-md shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+                <h3 class="font-black text-sm uppercase tracking-wider text-amber-400">📋 Rekap Transaksi Shift Aktif</h3>
+                <button onclick="tutupModalRekap()" class="text-slate-400 hover:text-white text-lg font-bold focus:outline-none cursor-pointer">✕</button>
+            </div>
+            <div class="p-5 space-y-4 text-xs flex-1 overflow-y-auto">
+                <div class="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200 text-slate-600 font-medium">
+                    <div>Nama Kasir: <span id="rekap-kasir" class="font-bold text-slate-900 block"></span></div>
+                    <div>ID Shift: <span id="rekap-shift" class="font-bold text-slate-900 block"></span></div>
+                </div>
+                
+                <div class="border border-slate-200 rounded-lg overflow-hidden">
+                    <div class="bg-slate-100 p-2 font-bold text-slate-700 uppercase text-[10px] tracking-wide border-b border-slate-200">Histori Nota Terkunci:</div>
+                    <div id="rekap-list-invoice" class="max-h-40 overflow-y-auto divide-y divide-slate-100 font-mono text-[11px] text-slate-600">
+                        </div>
+                </div>
+
+                <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 flex justify-between items-center">
+                    <div class="text-emerald-900 font-bold uppercase tracking-wide text-[10px]">Total Omzet Shift Ini:</div>
+                    <div id="rekap-total-omzet" class="font-mono text-xl font-black text-emerald-700">Rp 0</div>
+                </div>
+            </div>
+            <div class="bg-slate-50 p-3 border-t border-slate-100 flex justify-end">
+                <button onclick="tutupModalRekap()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2 rounded-lg text-xs cursor-pointer transition">Selesai / Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <div id="print-area" class="hidden"></div>
 
     <script>
@@ -144,7 +174,6 @@
             });
         }
 
-        // BUGFIX MUTLAK PENCARIAN MANUAL: Dipaksa konversi string agar pencarian sensitif teks huruf besar/kecil tetap sinkron
         function filterKatalog() {
             const keyword = document.getElementById('search_input').value.toLowerCase().trim();
             if (keyword === "") {
@@ -279,6 +308,61 @@
                 isFirstItem = true;
                 renderCart(); renderHoldList();
             }
+        }
+
+        // FITUR BARU: Ambil Data Penjualan Terpusat khusus Kasir & Shift ini saja
+        async function bukaModalRekap() {
+            const namaKasirSekarang = document.getElementById('cashier_name').value.trim();
+            const idShiftSekarang = document.getElementById('shift_id').value.trim();
+            
+            document.getElementById('rekap-kasir').innerText = namaKasirSekarang;
+            document.getElementById('rekap-shift').innerText = idShiftSekarang;
+            
+            const invoiceBox = document.getElementById('rekap-list-invoice');
+            invoiceBox.innerHTML = '<p class="text-center p-4 text-slate-400 italic">Menghitung omzet...</p>';
+            document.getElementById('rekap-total-omzet').innerText = "Rp 0";
+            
+            document.getElementById('modal-rekap').classList.remove('hidden');
+            
+            try {
+                // Menembak endpoint getLaporanAdmin milik Apps Script secara aman
+                const res = await fetch(`${API_URL}?action=getLaporanAdmin`, { method: 'GET', mode: 'cors' });
+                const txt = await res.text();
+                const result = JSON.parse(txt);
+                
+                if (result.success || result.penjualan) {
+                    invoiceBox.innerHTML = '';
+                    let totalOmzetShift = 0;
+                    let jumlahNota = 0;
+                    
+                    // Filter data penjualan: Hanya yang COCOK KASIR DAN SHIFT-NYA
+                    result.penjualan.forEach(nota => {
+                        if (nota.cashier_name.toString().trim() === namaKasirSekarang && nota.shift_id.toString().trim() === idShiftSekarang) {
+                            totalOmzetShift += parseInt(nota.grand_total || 0);
+                            jumlahNota++;
+                            
+                            invoiceBox.innerHTML += `
+                                <div class="p-2 flex justify-between hover:bg-slate-50">
+                                    <span class="font-bold text-indigo-950">${nota.invoice_number}</span>
+                                    <span class="text-emerald-600 font-bold">Rp ${parseInt(nota.grand_total).toLocaleString('id-ID')}</span>
+                                </div>`;
+                        }
+                    });
+                    
+                    if (jumlahNota === 0) {
+                        invoiceBox.innerHTML = '<p class="text-center p-4 text-slate-400 italic">Belum ada nota terkunci pada shift ini.</p>';
+                    }
+                    
+                    document.getElementById('rekap-total-omzet').innerText = "Rp " + totalOmzetShift.toLocaleString('id-ID');
+                }
+            } catch (e) {
+                invoiceBox.innerHTML = '<p class="text-center p-4 text-rose-500 font-bold">Gagal mengambil data dari Google Sheets.</p>';
+            }
+        }
+
+        function tutupModalRekap() {
+            document.getElementById('modal-rekap').classList.add('hidden');
+            focusSearchInput();
         }
 
         function controlShift(type) {
