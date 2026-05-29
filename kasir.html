@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POS Kasir (User Interface)</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
@@ -18,11 +19,13 @@
     </header>
 
     <div class="flex-1 grid grid-cols-12 gap-4 p-4 overflow-hidden">
+        
         <div class="col-span-7 bg-white rounded-xl shadow-xs p-4 flex flex-col overflow-y-auto border border-gray-200">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="font-bold text-slate-700 text-sm uppercase">Katalog Barang Toko</h2>
                 <button onclick="muatKatalogBarang()" class="bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs px-2.5 py-1 rounded font-medium transition">🔄 Sync Stok</button>
             </div>
+            <div id="loading-catalog" class="hidden text-xs text-amber-600 font-semibold animate-pulse mb-2">Memuat sisa stok terbaru dari Google Sheets...</div>
             <div class="grid grid-cols-3 gap-2.5" id="katalog-container"></div>
         </div>
 
@@ -60,22 +63,37 @@
     <div id="print-area" class="hidden"></div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyf-JblYwg-7DWOnPHnFlAHrJBxdI7Ap1ElB9zI66e6iPjWwHHRDqKYG1_KZxRtboXJ/exec"; // Taruh URL Web App GAS Anda di sini
+        // Memakai URL Web App Google Apps Script Anda yang sudah sinkron
+        const API_URL = "https://script.google.com/macros/s/AKfycbyf-JblYwg-7DWOnPHnFlAHrJBxdI7Ap1ElB9zI66e6iPjWwHHRDqKYG1_KZxRtboXJ/exec"; 
         let masterProduk = []; let cart = []; let holdReceipts = [];
 
+        // 1. Ambil Data Produk (Metode Bypass CORS Menggunakan text())
         async function muatKatalogBarang() {
+            document.getElementById('loading-catalog').classList.remove('hidden');
             try {
-                const res = await fetch(`${API_URL}?action=getProduk`);
-                const data = await res.json();
-                if(data.success) { masterProduk = data.data; renderKatalog(); }
-            } catch(e) { console.error("Koneksi bermasalah."); }
+                const res = await fetch(`${API_URL}?action=getProduk`, { method: 'GET', mode: 'cors' });
+                const txt = await res.text();
+                const data = JSON.parse(txt);
+                
+                const dataArray = Array.isArray(data) ? data : data.data;
+                if (dataArray) {
+                    masterProduk = dataArray;
+                    renderKatalog();
+                }
+            } catch(e) {
+                console.error("Koneksi bermasalah saat memuat produk:", e);
+            } finally {
+                document.getElementById('loading-catalog').classList.add('hidden');
+            }
         }
 
+        // 2. Render Katalog Produk (Diperbaiki dengan menambahkan tanda kutip pada parameter barcode)
         function renderKatalog() {
-            const container = document.getElementById('katalog-container'); container.innerHTML = '';
+            const container = document.getElementById('katalog-container');
+            container.innerHTML = '';
             masterProduk.forEach(p => {
                 container.innerHTML += `
-                    <div onclick="tambahKeCart(${p.barcode})" class="border border-slate-200 p-2.5 rounded bg-white hover:border-slate-400 cursor-pointer flex flex-col justify-between shadow-2xs transition">
+                    <div onclick="tambahKeCart('${p.barcode}')" class="border border-slate-200 p-2.5 rounded bg-white hover:border-slate-400 cursor-pointer flex flex-col justify-between shadow-2xs transition">
                         <div>
                             <span class="text-[9px] font-mono text-slate-400 block">${p.barcode}</span>
                             <span class="text-xs font-bold text-slate-800 line-clamp-1">${p.product_name}</span>
@@ -89,8 +107,10 @@
         }
 
         function tambahKeCart(barcode) {
-            let prod = masterProduk.find(p => p.barcode == barcode);
-            let exist = cart.find(c => c.barcode == barcode);
+            let prod = masterProduk.find(p => p.barcode.toString() == barcode.toString());
+            if (!prod) return;
+            
+            let exist = cart.find(c => c.barcode.toString() == barcode.toString());
             if(exist) {
                 if(exist.quantity >= prod.stock) return alert("Barang di rak habis!");
                 exist.quantity++;
@@ -103,7 +123,11 @@
 
         function renderCart() {
             const box = document.getElementById('cart-container');
-            if(cart.length === 0) { box.innerHTML = '<p class="text-slate-400 text-center py-6 text-xs">Keranjang kosong.</p>'; document.getElementById('total-text').innerText = 'Rp 0'; return; }
+            if(cart.length === 0) {
+                box.innerHTML = '<p class="text-slate-400 text-center py-6 text-xs">Keranjang kosong.</p>';
+                document.getElementById('total-text').innerText = 'Rp 0';
+                return;
+            }
             let html = ''; let total = 0;
             cart.forEach((item, index) => {
                 let sub = item.selling_price * item.quantity; total += sub;
@@ -111,14 +135,15 @@
                     <div class="flex justify-between items-center text-xs py-2 border-b border-slate-100">
                         <div class="w-1/2"><span class="font-bold text-slate-800 block truncate">${item.product_name}</span></div>
                         <div class="flex gap-1">
-                            <button onclick="ubahQty(${index},-1)" class="px-1.5 bg-slate-200 rounded font-bold">-</button>
+                            <button onclick="ubahQty(${index},-1)" class="px-1.5 bg-slate-200 rounded font-bold cursor-pointer">-</button>
                             <span class="font-mono px-1">${item.quantity}</span>
-                            <button onclick="ubahQty(${index},1)" class="px-1.5 bg-slate-200 rounded font-bold">+</button>
+                            <button onclick="ubahQty(${index},1)" class="px-1.5 bg-slate-200 rounded font-bold cursor-pointer">+</button>
                         </div>
                         <span class="font-mono font-bold text-slate-700 text-right w-20">Rp ${sub.toLocaleString('id-ID')}</span>
                     </div>`;
             });
-            box.innerHTML = html; document.getElementById('total-text').innerText = 'Rp ' + total.toLocaleString('id-ID');
+            box.innerHTML = html;
+            document.getElementById('total-text').innerText = 'Rp ' + total.toLocaleString('id-ID');
         }
 
         function ubahQty(idx, delta) {
@@ -127,13 +152,30 @@
             renderCart();
         }
 
-        function holdNota() { if(cart.length===0)return; holdReceipts.push({ id:Date.now(), items:cart }); cart=[]; renderCart(); renderHoldList(); }
+        // Fitur Hold & Resume Nota
+        function holdNota() {
+            if(cart.length === 0) return;
+            holdReceipts.push({ id: Date.now(), items: cart });
+            cart = []; renderCart(); renderHoldList();
+        }
+
         function renderHoldList() {
             const box = document.getElementById('hold-list-box'); box.innerHTML = '';
-            holdReceipts.forEach((h, i) => { box.innerHTML += `<button onclick="resumeNota(${h.id})" class="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded font-bold transition">Nota ${i+1}</button>`; });
+            holdReceipts.forEach((h, i) => {
+                box.innerHTML += `<button onclick="resumeNota(${h.id})" class="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded font-bold transition cursor-pointer shadow-2xs">Nota ${i+1}</button>`;
+            });
         }
-        function resumeNota(id) { let idx=holdReceipts.findIndex(h=>h.id===id); if(idx!==-1){ cart=holdReceipts[idx].items; holdReceipts.splice(idx,1); renderCart(); renderHoldList(); } }
 
+        function resumeNota(id) {
+            let idx = holdReceipts.findIndex(h => h.id === id);
+            if(idx !== -1){
+                cart = holdReceipts[idx].items;
+                holdReceipts.splice(idx, 1);
+                renderCart(); renderHoldList();
+            }
+        }
+
+        // 3. Kontrol Shift Kasir (Buka/Tutup Modal)
         function controlShift(type) {
             let cashier = document.getElementById('cashier_name').value;
             let shift = document.getElementById('shift_id').value;
@@ -141,9 +183,21 @@
             if(!amount) return;
 
             let payload = { action: type === "buka" ? "bukaShift" : "tutupShift", cashier_name: cashier, shift_id: shift, starting_cash: amount, actual_cash: amount };
-            fetch(API_URL, { method: "POST", body: JSON.stringify(payload) }).then(res => res.json()).then(res => alert(res.message));
+            
+            document.body.classList.add("pointer-events-none", "opacity-40");
+            fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+            .define(res => res.text())
+            .then(txt => {
+                document.body.classList.remove("pointer-events-none", "opacity-40");
+                const res = JSON.parse(txt);
+                alert(res.message);
+            }).catch(() => {
+                document.body.classList.remove("pointer-events-none", "opacity-40");
+                alert("Gagal memproses shift.");
+            });
         }
 
+        // 4. Proses Checkout (Diubah memakai .text() bypass CORS)
         function prosesCheckout() {
             if(cart.length === 0) return alert("Keranjang kosong!");
             let total = cart.reduce((sum, item) => sum + (item.selling_price * item.quantity), 0);
@@ -157,13 +211,22 @@
             };
 
             document.body.classList.add("pointer-events-none", "opacity-40");
-            fetch(API_URL, { method: "POST", body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
+            fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+            .then(res => res.text())
+            .then(txt => {
                 document.body.classList.remove("pointer-events-none", "opacity-40");
+                const res = JSON.parse(txt);
                 if(res.success) {
                     alert("Sukses Terkunci! Invoice: " + res.invoice);
                     cetakStrukThermal(res.invoice, total);
                     cart = []; renderCart(); muatKatalogBarang();
-                } else { alert("Gagal: " + res.message); muatKatalogBarang(); }
+                } else { 
+                    alert("Gagal: " + res.message); 
+                    muatKatalogBarang(); 
+                }
+            }).catch(() => {
+                document.body.classList.remove("pointer-events-none", "opacity-40");
+                alert("Gagal terhubung ke server Google Sheets.");
             });
         }
 
@@ -178,7 +241,10 @@
             window.print();
         }
 
-        muatKatalogBarang();
+        // Jalankan sinkronisasi katalog otomatis saat halaman pertama dibuka kasir
+        window.addEventListener('DOMContentLoaded', () => {
+            muatKatalogBarang();
+        });
     </script>
     <style>@media print { body * { visibility: hidden; } #print-area, #print-area * { visibility: visible; display: block !important; } #print-area { position: absolute; left: 0; top: 0; width: 58mm; } }</style>
 </body>
