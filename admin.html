@@ -162,7 +162,6 @@
                     const select = document.getElementById('admin-product-select');
                     const dataArray = Array.isArray(result) ? result : result.data;
                     
-                    // Simpan nilai pilihan admin sebelumnya agar saat auto-refresh posisinya tidak melompat-lompat
                     const selectedValueBefore = select.value;
                     select.innerHTML = '';
                     
@@ -177,7 +176,7 @@
             }
         }
 
-        // 2. Ambil Laporan Komprehensif (Dengan Parameter untuk menonaktifkan spinner saat auto-refresh background)
+        // 2. Ambil Laporan Komprehensif
         async function muatDataLaporanSistem(pakeSpinner = false) {
             if(pakeSpinner) toggleLoading(true);
             setIndicatorStatus(true);
@@ -233,7 +232,7 @@
             }
         }
 
-        // 3. FITUR BARU: Eksekusi Kirim Data Master Produk Baru ke Google Sheets
+        // 3. Eksekusi Master Produk Baru ke Google Sheets
         function eksekusiTambahProdukBaru() {
             const barcode = document.getElementById('new-p-barcode').value.trim();
             const name = document.getElementById('new-p-name').value.trim();
@@ -265,14 +264,13 @@
                 
                 if (result.success) {
                     alert(result.message);
-                    // Reset isi formulir setelah sukses disimpan
                     document.getElementById('new-p-barcode').value = "";
                     document.getElementById('new-p-name').value = "";
                     document.getElementById('new-p-cost').value = 0;
                     document.getElementById('new-p-selling').value = 0;
                     document.getElementById('new-p-stock').value = 10;
                     
-                    muatDataLaporanSistem(true); // Paksa refresh visual dashboard
+                    muatDataLaporanSistem(true);
                 } else {
                     alert("Gagal menyimpan: " + result.message);
                 }
@@ -284,7 +282,7 @@
             });
         }
 
-        // 4. Kirim Perintah Penyesuaian Stock Opname Existing
+        // 4. Koreksi Stock Opname
         function eksekusiUpdateStokGudang() {
             const barcode = document.getElementById('admin-product-select').value;
             const stock = document.getElementById('admin-new-stock').value;
@@ -318,19 +316,29 @@
             });
         }
 
-        // TIMER PINTAR: Mengaktifkan fungsi auto-refresh data setiap 10 detik sekali secara otomatis
+        // OPTIMASI ANTI-DELAY: Detektor Interval Pintar Berbasis Visibilitas Layar
         function aktifkanLiveAutoSync() {
             if(loopIntervalAktivitas) clearInterval(loopIntervalAktivitas);
             
             loopIntervalAktivitas = setInterval(() => {
-                muatDataLaporanSistem(false); // Ambil data secara senyap di background tanpa memunculkan loading pop-up amber
-            }, 10000); // 10000 milidetik = 10 Detik
+                // Hanya refresh jika tab Admin sedang aktif dilihat, jeda diperlonggar menjadi 25 detik
+                if (!document.hidden) {
+                    muatDataLaporanSistem(false); 
+                }
+            }, 25000); 
         }
 
-        // Inisialisasi muatan data otomatis saat pertama kali tab dibuka admin
+        // Inisialisasi muatan data otomatis saat pertama kali dibuka
         window.addEventListener('DOMContentLoaded', () => {
             muatDataLaporanSistem(true);
-            aktifkanLiveAutoSync(); // Aktifkan mesin auto-sync real-time
+            aktifkanLiveAutoSync(); 
+        });
+
+        // Jika admin pindah tab browser lalu kembali lagi, data langsung otomatis sinkron tanpa nunggu timer
+        document.addEventListener("visibilitychange", () => {
+            if (!document.hidden) {
+                muatDataLaporanSistem(false);
+            }
         });
     </script>
 </body>
