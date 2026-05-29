@@ -6,7 +6,6 @@
     <title>Admin Control Center (Dashboard Mode)</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 </head>
 <body class="bg-slate-50 font-sans min-h-screen">
 
@@ -188,7 +187,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxBO8cdHizEKP8rpnB3_w0UGUoiGZKiS2GtH9YuGG5a2gPakUz20D6HnmaEwQWvXCYY/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzzzlg9ytufBtiK4A1Ku-Ny4nbW1tPbE8A2PJ3XX2NQzPwfYgRgS-Oy0GKZ81k9uouA/exec";
         let loopIntervalAktivitas;
         let globalDataShifts = [];
 
@@ -300,12 +299,12 @@
             }
         }
 
-        // ENGINE STANDARDIZATION MOMENT WORKER
+        // METODE ANTI-BOUNDS: Mengamankan penyaringan tanggal tanpa melibatkan dependensi Date Browser
         function renderTabelRekapShift() {
             const shiftsBody = document.getElementById('table-shifts-body');
             shiftsBody.innerHTML = '';
             
-            const tanggalTarget = document.getElementById('filter-shift-date').value.trim(); 
+            const tanggalTarget = document.getElementById('filter-shift-date').value.trim(); // Contoh: "2026-05-29"
             document.getElementById('pdf-date-title').innerText = tanggalTarget;
             
             if (!tanggalTarget) {
@@ -313,13 +312,15 @@
                 return;
             }
 
+            // Saring array data shift hasil konversi teks string murni di Apps Script
             const dataTerfilter = globalDataShifts.filter(s => {
                 let waktuRaw = s.waktu_buka || s.tanggal;
                 if (!waktuRaw) return false;
                 
-                // Konversi paksa zona waktu ISO dan string lokal menjadi format YYYY-MM-DD murni
-                let tanggalSheetSaja = moment(waktuRaw).format('YYYY-MM-DD');
-                return tanggalSheetSaja === tanggalTarget;
+                let strWaktu = waktuRaw.toString().trim();
+                
+                // Potong dan bandingkan langsung 10 karakter pertama (Format standard: YYYY-MM-DD)
+                return strWaktu.substring(0, 10) === tanggalTarget;
             });
             
             if (dataTerfilter.length === 0) {
