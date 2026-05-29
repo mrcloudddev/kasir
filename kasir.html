@@ -11,10 +11,16 @@
     <header class="bg-slate-900 text-white p-4 flex flex-col md:flex-row justify-between items-center gap-3 shadow-md">
         <h1 class="text-base font-black tracking-wider text-emerald-400">🛒 POS TERMINAL KASIR</h1>
         <div class="flex items-center gap-2 text-xs bg-slate-800 p-2 rounded border border-slate-700">
-            <input type="text" id="cashier_name" value="Kasir 1" class="bg-slate-900 text-white rounded px-2 py-1 w-20 text-center focus:outline-none">
-            <input type="text" id="shift_id" value="SF-01" class="bg-slate-900 text-white rounded px-2 py-1 w-16 text-center focus:outline-none">
-            <button onclick="controlShift('buka')" class="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded font-bold transition">Buka Shift</button>
-            <button onclick="controlShift('tutup')" class="bg-rose-600 hover:bg-rose-700 px-2 py-1 rounded font-bold transition">Tutup Shift</button>
+            <div class="flex items-center gap-1">
+                <span class="text-slate-400 text-[10px] font-bold uppercase">Kasir:</span>
+                <input type="text" id="cashier_name" value="Kasir 1" class="bg-slate-950 text-white border border-slate-700 rounded px-2 py-1 w-24 text-center focus:outline-none focus:border-emerald-500 font-semibold">
+            </div>
+            <div class="flex items-center gap-1">
+                <span class="text-slate-400 text-[10px] font-bold uppercase">Shift:</span>
+                <input type="text" id="shift_id" value="SF-01" class="bg-slate-950 text-white border border-slate-700 rounded px-2 py-1 w-16 text-center focus:outline-none focus:border-emerald-500 font-semibold">
+            </div>
+            <button onclick="controlShift('buka')" class="bg-blue-600 hover:bg-blue-700 px-2.5 py-1 rounded font-bold transition cursor-pointer ml-1">Buka Shift</button>
+            <button onclick="controlShift('tutup')" class="bg-rose-600 hover:bg-rose-700 px-2.5 py-1 rounded font-bold transition cursor-pointer">Tutup Shift</button>
         </div>
     </header>
 
@@ -63,11 +69,10 @@
     <div id="print-area" class="hidden"></div>
 
     <script>
-        // Memakai URL Web App Google Apps Script Anda yang sudah sinkron
         const API_URL = "https://script.google.com/macros/s/AKfycbyf-JblYwg-7DWOnPHnFlAHrJBxdI7Ap1ElB9zI66e6iPjWwHHRDqKYG1_KZxRtboXJ/exec"; 
         let masterProduk = []; let cart = []; let holdReceipts = [];
 
-        // 1. Ambil Data Produk (Metode Bypass CORS Menggunakan text())
+        // 1. Ambil Data Produk (Metode Bypass CORS)
         async function muatKatalogBarang() {
             document.getElementById('loading-catalog').classList.remove('hidden');
             try {
@@ -87,7 +92,7 @@
             }
         }
 
-        // 2. Render Katalog Produk (Diperbaiki dengan menambahkan tanda kutip pada parameter barcode)
+        // 2. Render Katalog Produk
         function renderKatalog() {
             const container = document.getElementById('katalog-container');
             container.innerHTML = '';
@@ -186,7 +191,7 @@
             
             document.body.classList.add("pointer-events-none", "opacity-40");
             fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
-            .define(res => res.text())
+            .then(res => res.text())
             .then(txt => {
                 document.body.classList.remove("pointer-events-none", "opacity-40");
                 const res = JSON.parse(txt);
@@ -197,7 +202,7 @@
             });
         }
 
-        // 4. Proses Checkout (Diubah memakai .text() bypass CORS)
+        // 4. Proses Checkout
         function prosesCheckout() {
             if(cart.length === 0) return alert("Keranjang kosong!");
             let total = cart.reduce((sum, item) => sum + (item.selling_price * item.quantity), 0);
@@ -241,7 +246,7 @@
             window.print();
         }
 
-        // Jalankan sinkronisasi katalog otomatis saat halaman pertama dibuka kasir
+        // Jalankan sinkronisasi katalog otomatis saat halaman dibuka
         window.addEventListener('DOMContentLoaded', () => {
             muatKatalogBarang();
         });
