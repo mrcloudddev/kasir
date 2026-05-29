@@ -306,7 +306,6 @@
             }
         }
 
-        // LOGIKA PENYARINGAN FIX TOTAL BARU: Membaca potongan string C (start_time) secara mutlak
         function renderTabelRekapShift() {
             const shiftsBody = document.getElementById('table-shifts-body');
             shiftsBody.innerHTML = '';
@@ -321,13 +320,12 @@
                 return;
             }
 
-            // Saring database menggunakan pemotongan karakter kolom start_time (pasti ada isinya di spreadsheet)
+            // Memfilter database shift menggunakan parameter start_time terstruktur
             const dataTerfilter = globalDataShifts.filter(s => {
                 let waktuAsli = s.start_time || s.waktu_buka || s.tanggal;
                 if (!waktuAsli) return false;
                 
                 let str = waktuAsli.toString().trim();
-                // Ambil 10 karakter pertama (Standard: YYYY-MM-DD)
                 return str.substring(0, 10) === tanggalTarget;
             });
             
@@ -353,6 +351,7 @@
             });
         }
 
+        // FIX FINISHED: Engine Download PDF Instan Tanpa Blok Validasi
         function unduhLaporanHarianPDF() {
             const tanggalTarget = document.getElementById('filter-shift-date').value.trim();
             const elementLaporan = document.getElementById('area-pdf-laporan');
@@ -362,7 +361,7 @@
             }
 
             const opsiSetelanDoc = {
-                margin:       [15, 15, 15, 15],
+                margin:       [10, 15, 10, 15],
                 filename:     `Laporan_Harian_POS_${tanggalTarget}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true },
