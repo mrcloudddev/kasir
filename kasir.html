@@ -4,24 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POS Terminal Kasir (Responsive Mode)</title>
-    <!-- Tailwind CSS v4 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         /* Sembunyikan scrollbar bawaan browser agar UI terlihat seperti aplikasi native */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* ARSITEKTUR KUNCI ELEMEN STRUK NOTA SAAT BERADA DI MODE CETAK */
+        #container-struk-nota-print { display: none; }
+        
+        @media print {
+            /* Sembunyikan TOTAL seluruh elemen aplikasi kasir di layar monitor saat print struk */
+            body * { display: none !important; }
+            
+            /* Hanya tampilkan area struk kasir murni berukuran lebar kertas thermal 58mm / 80mm */
+            #container-struk-nota-print, #container-struk-nota-print * { display: block !important; }
+            #container-struk-nota-print {
+                display: block !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                max-width: 60mm !important; /* Standar ukuran kertas struk kasir thermal */
+                font-family: 'Courier New', Courier, monospace !important;
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                padding: 0mm !important;
+                margin: 0mm !important;
+            }
+            @page { margin: 0; }
+        }
     </style>
 </head>
 <body class="bg-slate-100 font-sans h-screen flex flex-col overflow-hidden text-slate-900 selection:bg-emerald-500 selection:text-white">
 
-    <!-- Header Panel Kasir -->
     <header class="bg-slate-900 text-white p-3 sm:p-4 shadow-md flex flex-col md:flex-row justify-between items-center gap-3 shrink-0">
         <div class="flex items-center gap-2">
             <span class="text-xl">🛒</span>
             <h1 class="text-base sm:text-lg font-black tracking-wider uppercase text-emerald-400">POS TERMINAL KASIR OPERASIONAL</h1>
         </div>
         
-        <!-- Kontrol Status Operator & Shift -->
         <div class="flex flex-wrap items-center justify-center md:justify-end gap-2 w-full md:w-auto text-xs">
             <div class="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center gap-2 font-mono">
                 <span class="text-slate-400">KASIR:</span>
@@ -38,13 +60,9 @@
         </div>
     </header>
 
-    <!-- Main Workspace Container -->
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-3 sm:p-4 overflow-y-auto lg:overflow-hidden min-h-0">
         
-        <!-- AREA LEFT (KATALOG PRODUK): 7 Kolom Desktop, Otomatis Stack di HP -->
         <div class="lg:col-span-7 bg-white p-4 rounded-xl shadow-xs border border-slate-200 flex flex-col min-h-[400px] lg:min-h-0 overflow-hidden">
-            
-            <!-- Bar Pencarian & Scan Barcode -->
             <div class="flex gap-2 mb-4 shrink-0">
                 <div class="relative flex-1">
                     <span class="absolute left-3 top-3 text-slate-400 text-sm">🔍</span>
@@ -53,16 +71,12 @@
                 <button onclick="bersihkanPencarianPOS()" class="bg-slate-200 hover:bg-slate-300 px-4 py-2 rounded-lg text-xs font-bold transition active:scale-95 cursor-pointer">Clear</button>
             </div>
 
-            <!-- Grid Item Katalog Produk (Scrollable Sisi Dalam) -->
             <div class="flex-1 overflow-y-auto no-scrollbar pr-1">
                 <h3 class="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Hasil Katalog Barang:</h3>
-                <div id="catalog-products-container" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <!-- Data Produk Di-render Otomatis via JS -->
-                </div>
+                <div id="catalog-products-container" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
             </div>
         </div>
 
-        <!-- AREA RIGHT (KERANJANG & PEMBAYARAN): 5 Kolom Desktop, Otomatis Stack di HP -->
         <div class="lg:col-span-5 bg-white p-4 rounded-xl shadow-xs border border-slate-200 flex flex-col min-h-[350px] lg:min-h-0 overflow-hidden">
             <div class="flex justify-between items-center mb-2 pb-2 border-b border-slate-100 shrink-0">
                 <h2 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-1">
@@ -71,12 +85,10 @@
                 <button onclick="kosongkanKeranjangTotal()" class="text-[11px] text-rose-500 font-bold hover:underline cursor-pointer">Hold / Void Semua</button>
             </div>
 
-            <!-- List Item di Keranjang Belanja -->
             <div id="cart-items-wrapper" class="flex-1 overflow-y-auto no-scrollbar pr-1 space-y-2 divide-y divide-slate-50 text-xs">
                 <div class="text-center py-12 text-slate-400 italic">Keranjang belanja kosong. Silakan ketuk produk di sebelah kiri.</div>
             </div>
 
-            <!-- Form Grand Total Finansial Kasir -->
             <div class="mt-4 pt-3 border-t-2 border-dashed border-slate-200 space-y-3 shrink-0">
                 <div class="flex justify-between items-center bg-emerald-50 p-3 rounded-lg border border-emerald-100">
                     <span class="text-xs font-bold text-emerald-800 uppercase tracking-wider">TOTAL NOTA:</span>
@@ -107,20 +119,39 @@
                     💸 BAYAR & POTONG STOK
                 </button>
             </div>
-
         </div>
     </div>
 
-    <!-- JAVASCRIPT POS ENGINE INTEGRATION -->
+    <div id="container-struk-nota-print">
+        <div style="text-align: center; font-weight: bold; font-size: 14px; margin-bottom: 2mm;">KAFE TOKO POS KASIR</div>
+        <div style="text-align: center; font-size: 10px; margin-bottom: 3mm; border-b: 1px dashed #000; padding-bottom: 2mm;">
+            Jl. Raya Operasional Terpusat, Indonesia<br>
+            Telp: 0812-3456-7890
+        </div>
+        <div style="font-size: 9px; font-family: monospace; line-height: 1.4; margin-bottom: 2mm; border-bottom: 1px dashed #000; padding-bottom: 2mm;">
+            No. Nota: <span id="print-invoice-id">INV-XXXX</span><br>
+            Tanggal : <span id="print-timestamp-id">2026-00-00</span><br>
+            Kasir   : <span id="print-cashier-id">Kasir</span> (<span id="print-shift-id">SF</span>)
+        </div>
+        <div style="font-size: 9px; font-family: monospace; border-bottom: 1px dashed #000; padding-bottom: 2mm; margin-bottom: 2mm;" id="print-items-list-area">
+            </div>
+        <div style="font-size: 10px; font-family: monospace; font-weight: bold; text-align: right; line-height: 1.4;">
+            TOTAL JUAL : <span id="print-total-id">Rp 0</span><br>
+            METODE     : <span id="print-method-id">-</span><br>
+            BAYAR      : <span id="print-pay-id">Rp 0</span><br>
+            KEMBALIAN  : <span id="print-change-id">Rp 0</span>
+        </div>
+        <div style="text-align: center; font-size: 9px; font-weight: bold; margin-top: 5mm; border-top: 1px dashed #000; padding-top: 3mm;">
+            *** TERIMA KASIH LUNAS ***<br>
+            Barang yang sudah dibeli tidak dapat ditukar
+        </div>
+    </div>
+
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbyeGe0Z_vWqJU4BrJmn872SJMXZEG2MmsLlW9Hr8p8l0jvoMqqV201QnoPc6-kM6WII/exec";
         let masterProduk = [];
         let keranjangBelanja = [];
         let dataOperatorShift = { cashier_name: "Kasir 1", shift_id: "SF-01" };
-
-        function toggleLoading(show) {
-            // Placeholder jika Anda menambahkan indikator spinner loading di masa mendatang
-        }
 
         async function muatKatalogProdukDariDatabase() {
             try {
@@ -164,7 +195,6 @@
             renderKatalogProduk(masterProduk);
         }
 
-        // PERBAIKAN LOGIKA UTAMA: Mengunci perbandingan matematika stok menggunakan bilangan bulat integer murni (parseInt)
         function tambahKeKeranjangBelanja(barcode) {
             const produk = masterProduk.find(p => p.barcode.toString().trim() === barcode.toString().trim());
             const jumlahStokRak = parseInt(produk ? produk.stock : 0, 10);
@@ -243,6 +273,7 @@
             document.getElementById('label-cash-change').innerText = sisa < 0 ? "Uang Kurang!" : `Rp ${sisa.toLocaleString('id-ID')}`;
         }
 
+        // OPTIMASI FINAL: SINKRONISASI LOGIKA AUTO-PRINT STRUK NOTA BELANJAAN
         function eksekusiCheckoutTransaksi() {
             if (keranjangBelanja.length === 0) return alert("Keranjang belanja masih kosong!");
             
@@ -268,7 +299,35 @@
             .then(res => {
                 document.body.classList.remove("pointer-events-none", "opacity-50");
                 if(res.success) {
-                    alert(`Transaksi Sukses Terkunci!\nNomor Invoice: ${res.invoice}`);
+                    
+                    // --- PROSES KOMPILASI DATA NOTA KASIR SEBELUM DICETAK ---
+                    document.getElementById('print-invoice-id').innerText = res.invoice;
+                    document.getElementById('print-timestamp-id').innerText = new Date().toLocaleString('id-ID');
+                    document.getElementById('print-cashier-id').innerText = dataOperatorShift.cashier_name;
+                    document.getElementById('print-shift-id').innerText = dataOperatorShift.shift_id;
+                    document.getElementById('print-total-id').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+                    document.getElementById('print-method-id').innerText = metode;
+                    document.getElementById('print-pay-id').innerText = metode === "TUNAI" ? `Rp ${bayar.toLocaleString('id-ID')}` : `Rp ${total.toLocaleString('id-ID')}`;
+                    
+                    let hitungSisa = bayar - total;
+                    document.getElementById('print-change-id').innerText = metode === "TUNAI" ? `Rp ${hitungSisa.toLocaleString('id-ID')}` : "Rp 0";
+
+                    // Susun item belanjaan ke kertas cetak nota
+                    let listArea = document.getElementById('print-items-list-area');
+                    listArea.innerHTML = '';
+                    keranjangBelanja.forEach(item => {
+                        let sub = item.selling_price * item.quantity;
+                        listArea.innerHTML += `
+                            <div style="display:flex; justify-between; margin-bottom:1mm;">
+                                <div style="flex:1;">${item.product_name}<br>(${item.quantity}x @${parseInt(item.selling_price).toLocaleString('id-ID')})</div>
+                                <div style="text-align:right; width:20mm;">Rp ${sub.toLocaleString('id-ID')}</div>
+                            </div>`;
+                    });
+
+                    // Pemicu Mesin Cetak Printer Struk Thermal Browser Otomatis
+                    window.print();
+
+                    // Bersihkan form seperti semula
                     kosongkanKeranjangTotal();
                     document.getElementById('pos-cash-received').value = 0;
                     muatKatalogProdukDariDatabase();
