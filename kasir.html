@@ -304,6 +304,9 @@
         let kasirAktif = !!_sesiTersimpan;
         let selectedAcIndex = -1;
 
+        // Restore riwayat transaksi shift dari localStorage
+        let riwayatTransaksiShiftLokal = JSON.parse(localStorage.getItem('pos_riwayat') || '[]');
+
         function simpanSesi() {
             if (kasirAktif) {
                 localStorage.setItem('pos_sesi', JSON.stringify({
@@ -314,9 +317,11 @@
                 localStorage.removeItem('pos_sesi');
             }
         }
+
+        function simpanRiwayat() {
+            localStorage.setItem('pos_riwayat', JSON.stringify(riwayatTransaksiShiftLokal));
+        }
         
-        // Array penampung mutasi keuangan untuk shift aktif
-        let riwayatTransaksiShiftLokal = [];
 
         function setStatusKasir(aktif) {
             kasirAktif = aktif;
@@ -615,6 +620,7 @@
                         method: metode,
                         grand_total: total
                     });
+                    simpanRiwayat();
 
                     document.getElementById('print-invoice-id').innerText = res.invoice;
                     const skrg = new Date();
@@ -678,6 +684,7 @@
 
             // Operator membuka sesi shift baru, maka data rekap lokal dikosongkan total agar tidak tercampur
             riwayatTransaksiShiftLokal = [];
+            simpanRiwayat();
 
             const payload = { action: "bukaShift", cashier_name: nama, shift_id: idShift, starting_cash: modal };
 
@@ -734,6 +741,7 @@
                 alert(res.message);
                 dataOperatorShift = { cashier_name: "", shift_id: "" };
                 riwayatTransaksiShiftLokal = [];
+                simpanRiwayat();
                 setStatusKasir(false);
                 document.getElementById('active-cashier-label').innerText = "-";
                 document.getElementById('active-shift-label').innerText = "-";
