@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Control Center (Dashboard Mode)</title>
+    <!-- Tailwind CSS v4 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Pustaka html2pdf.js Eksternal untuk Cetak Dokumen -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body class="bg-slate-50 font-sans min-h-screen text-slate-900 selection:bg-indigo-500 selection:text-white">
 
+    <!-- Header Panel Admin -->
     <header class="bg-indigo-900 text-white p-4 shadow-md flex flex-col sm:flex-row justify-between items-center gap-3 media-no-print">
         <div class="flex items-center gap-3">
             <h1 class="text-lg sm:text-xl font-bold tracking-wide text-center sm:text-left">👑 SYSTEM CONTROL PANEL (ADMIN ONLY)</h1>
@@ -23,13 +26,17 @@
         </div>
     </header>
 
+    <!-- Main Container -->
     <div class="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
         
+        <!-- Status Loading Global -->
         <div id="loading-state" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl font-semibold shadow-xs media-no-print">
             Sedang berkomunikasi dengan database terpusat...
         </div>
         
+        <!-- ROW 1: MASTER INPUT BARANG DAN OPNAME STOK -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 media-no-print">
+            <!-- FORM A: INPUT MASTER PRODUK BARU -->
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
                 <div>
                     <h2 class="text-xs font-black text-indigo-700 uppercase tracking-widest mb-3 flex items-center gap-1">
@@ -63,6 +70,7 @@
                 </button>
             </div>
 
+            <!-- FORM B: KOREKSI STOK DUAL MODE -->
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
                 <div>
                     <h2 class="text-xs font-black text-amber-700 uppercase tracking-widest mb-3 flex items-center gap-1">
@@ -92,7 +100,9 @@
             </div>
         </div>
 
+        <!-- ROW 2: LIVE OMZET & LOG AUDIT AKTIVITAS -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 media-no-print">
+            <!-- HISTORI OMZET PENJUALAN -->
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-72">
                 <h2 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <span class="text-emerald-600">📈</span> Histori Penjualan POS (Live)
@@ -111,6 +121,7 @@
                 </div>
             </div>
 
+            <!-- AUDIT ACTIVITY LOGS -->
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-72">
                 <h2 class="text-xs font-black text-rose-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <span class="text-rose-600">🔒</span> Observability Activity Logs (Live)
@@ -131,7 +142,9 @@
             </div>
         </div>
 
+        <!-- ROW 3: REAL-TIME STOK & AREA REKAP SHIFT -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- MONITOR MASTER STOK -->
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96 media-no-print">
                 <h2 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <span>📦</span> Live Real-Time Master Stok Gudang
@@ -150,6 +163,7 @@
                 </div>
             </div>
 
+            <!-- TABEL LAPORAN REKAP SHIFT (KONTROLLER TINGGI DIKUNCI KHUSUS NON-PRINT) -->
             <div class="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96 overflow-hidden" id="area-pdf-laporan">
                 <div class="flex flex-col mb-2 border-b border-slate-100 pb-2 gap-2">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 media-no-print">
@@ -168,18 +182,21 @@
                         </div>
                     </div>
                     
+                    <!-- AREA KETERANGAN TANGGAL ATAS TABEL -->
                     <div class="text-[10px] sm:text-[11px] bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1.5 rounded-lg font-mono font-bold flex justify-between items-center">
                         <span>📅 Periode: <span id="label-date-view" class="text-indigo-700"></span></span>
                         <span class="text-slate-400">Terdeteksi: <span id="label-count-view" class="text-slate-700">0</span> Baris</span>
                     </div>
                 </div>
                 
-                <div class="overflow-y-auto flex-1 space-y-4 pr-1">
+                <!-- CONTAINER AREA RESPONSIVE SCROLLBAR UTAMA -->
+                <div id="rekap-scroll-wrapper" class="overflow-y-auto flex-1 space-y-4 pr-1">
                     <div class="hidden show-only-on-pdf mb-4 text-center border-b-2 border-slate-950 pb-2">
                         <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider">REKAP OPERASIONAL HARIAN LAPORAN SHIFT KASIR</h3>
                         <p class="text-[10px] font-mono text-slate-500 font-bold">Tanggal Audit: <span id="pdf-date-title"></span></p>
                     </div>
 
+                    <!-- TABEL RINGKASAN AKUMULASI KUMULATIF PER NAMA KASIR -->
                     <div class="border border-indigo-100 rounded-lg overflow-hidden shrink-0">
                         <div class="bg-indigo-900 text-white px-3 py-1.5 text-[10px] font-black tracking-wider uppercase">
                             📊 RINGKASAN SETORAN AKUMULATIF PER NAMA KASIR
@@ -198,6 +215,7 @@
                         </table>
                     </div>
 
+                    <!-- TABEL DATA BARIS UTAMA (SHIFT LOGS) -->
                     <div class="border border-slate-100 rounded-lg overflow-x-auto">
                         <table class="w-full text-left border-collapse min-w-[480px]">
                             <thead>
@@ -221,6 +239,7 @@
 
     </div>
 
+    <!-- JAVASCRIPT ENGINE -->
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbwyWjLnncrQMhpd-zT2xRZqPFhN_0b9hKWcTDyqch2vQexrsnuZULJkSbOWRTGER6mi/exec";
         let loopIntervalAktivitas;
@@ -334,7 +353,6 @@
             }
         }
 
-        // PERBAIKAN LOGIKA UTAMA: Menggunakan metode includes() agar pencarian tanggal kebal distorsi format regional database
         function renderTabelRekapShift() {
             const shiftsBody = document.getElementById('table-shifts-body');
             const summaryBody = document.getElementById('table-summary-kasir-body');
@@ -368,7 +386,6 @@
                 return;
             }
             
-            // Map pencatat akumulasi ringkasan per kasir
             let ringkasanKasirMap = {};
 
             dataTerfilter.reverse().forEach(s => {
@@ -377,7 +394,6 @@
                 let modalAwal = parseInt(s.starting_cash || 0, 10);
                 let uangLaciAktual = parseInt(s.actual_cash || 0, 10);
 
-                // Hitung kumulatif setoran kasir
                 if (!ringkasanKasirMap[s.cashier_name]) {
                     ringkasanKasirMap[s.cashier_name] = { totalModal: 0, totalLaci: 0 };
                 }
@@ -396,7 +412,6 @@
                     </tr>`;
             });
 
-            // Loop untuk meng-inject data baris ke tabel ringkasan per nama kasir
             for (let namaKasir in ringkasanKasirMap) {
                 summaryBody.innerHTML += `
                     <tr class="hover:bg-indigo-100/40 transition">
@@ -407,6 +422,7 @@
             }
         }
 
+        // FIX FIX LOGIKA CETAK PDF: Menghilangkan kendala pembatas tinggi elemen pembungkus secara temporer
         function unduhLaporanHarianPDF() {
             if(document.getElementById('table-shifts-body').innerText.includes('Tidak ada rekap')) {
                 return alert("Gagal mencetak! Tidak ada data laporan rekap shift yang tersedia pada tanggal ini.");
@@ -414,9 +430,15 @@
             
             const tanggalTarget = document.getElementById('filter-shift-date').value.trim();
             const elementTarget = document.getElementById('area-pdf-laporan');
+            const scrollWrapper = document.getElementById('rekap-scroll-wrapper');
             
-            const scrollContainer = elementTarget.querySelector('.overflow-y-auto');
-            if(scrollContainer) scrollContainer.classList.remove('overflow-y-auto');
+            // 1. Matikan pembatas scrollbar agar html2pdf bisa memotret total seluruh tinggi tabel asli
+            if(scrollWrapper) {
+                scrollWrapper.style.overflowY = 'visible';
+                scrollWrapper.style.maxHeight = 'none';
+            }
+            elementTarget.style.height = 'auto';
+            elementTarget.style.maxHeight = 'none';
 
             const opsiKonfigurasiPDF = {
                 margin:       [12, 12, 12, 12],
@@ -426,8 +448,15 @@
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opsiKonfigurasiPDF).from(elementTarget).toContainer().toCanvas().toImg().toPdf().save().then(() => {
-                if(scrollContainer) scrollContainer.classList.add('overflow-y-auto');
+            // 2. Eksekusi ekspor file PDF laporan harian
+            html2pdf().set(opsiKonfigurasiPDF).from(elementTarget).save().then(() => {
+                // 3. Kembalikan layout dasbor admin monitor ke kondisi semula setelah proses unduh selesai
+                if(scrollWrapper) {
+                    scrollWrapper.style.overflowY = 'auto';
+                    scrollWrapper.style.maxHeight = '';
+                }
+                elementTarget.style.height = '';
+                elementTarget.style.maxHeight = '';
             });
         }
 
