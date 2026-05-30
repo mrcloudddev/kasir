@@ -31,31 +31,28 @@
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 media-no-print">
-            
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
                 <div>
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 border-b border-slate-100 pb-2">
                         <h2 class="text-xs font-black text-indigo-700 uppercase tracking-widest flex items-center gap-1">
                             <span>➕</span> Daftarkan Master Produk Baru
                         </h2>
-                        
                         <div class="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-[10px] font-black tracking-wider uppercase">
                             <button onclick="gantiMetodeInputBarang('SCAN')" id="btn-mode-scan" class="px-2.5 py-1 rounded-md transition duration-200 cursor-pointer bg-indigo-600 text-white shadow-2xs">
-                                📷 Scan QR/Barcode
+                                📷 Scan
                             </button>
                             <button onclick="gantiMetodeInputBarang('MANUAL')" id="btn-mode-manual" class="px-2.5 py-1 rounded-md transition duration-200 cursor-pointer text-slate-500 hover:text-slate-900">
                                 ⌨️ Manual
                             </button>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-2 gap-3 text-xs">
                         <div class="col-span-2">
                             <label class="block text-slate-500 font-bold mb-1 flex justify-between">
                                 <span>Kode Barcode / EAN-13:</span>
                                 <span id="badge-input-status" class="text-[9px] font-mono text-indigo-600 bg-indigo-50 px-1.5 rounded animate-pulse">Mode Scanner Aktif (Auto-Focus)</span>
                             </label>
-                            <input type="text" id="new-p-barcode" placeholder="Arahkan alat scan / ketik kode barang..." class="w-full border border-slate-200 p-2.5 rounded-lg font-mono bg-slate-50 focus:outline-none focus:border-indigo-500 text-sm font-bold transition">
+                            <input type="text" id="new-p-barcode" placeholder="Scan barcode atau ketik angka..." class="w-full border border-slate-200 p-2.5 rounded-lg font-mono bg-slate-50 focus:outline-none focus:border-indigo-500 text-sm font-bold transition">
                         </div>
                         <div class="col-span-2">
                             <label class="block text-slate-500 font-bold mb-1">Nama Lengkap Produk:</label>
@@ -196,7 +193,7 @@
                     </div>
                 </div>
                 
-                <div class="flex flex-col gap-4 w-full">
+                <div id="rekap-scroll-wrapper" class="flex-1 flex flex-col gap-4 w-full overflow-y-auto no-scrollbar pr-1">
                     <div class="hidden show-only-on-pdf mb-4 text-center border-b-2 border-slate-950 pb-2">
                         <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider">REKAP OPERASIONAL HARIAN LAPORAN SHIFT KASIR</h3>
                         <p class="text-[10px] font-mono text-slate-500 font-bold">Tanggal Audit: <span id="pdf-date-title"></span></p>
@@ -247,8 +244,6 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbwyWjLnncrQMhpd-zT2xRZqPFhN_0b9hKWcTDyqch2vQexrsnuZULJkSbOWRTGER6mi/exec";
         let loopIntervalAktivitas;
         let globalDataShifts = [];
-        
-        // Penanda status metode input produk aktif secara default (SCAN)
         let metodeInputAktif = "SCAN"; 
 
         function toggleLoading(show) {
@@ -277,7 +272,6 @@
             }
         }
 
-        // BARU!! ENGINE PENGATUR METODE INPUT MASTER PRODUK
         function gantiMetodeInputBarang(mode) {
             metodeInputAktif = mode;
             const btnScan = document.getElementById('btn-mode-scan');
@@ -299,7 +293,6 @@
             }
         }
 
-        // Fungsi pemaksa auto-focus mengunci input barcode saat dokumen di-click / selesai di scan
         function jalankanLocksAutoFocusScanner() {
             if (metodeInputAktif === "SCAN") {
                 const inputBarcode = document.getElementById('new-p-barcode');
@@ -388,7 +381,6 @@
             } catch (error) { console.error(error); } finally {
                 if(pakeSpinner) toggleLoading(false);
                 setIndicatorStatus(false);
-                // Kembalikan focus ke barcode setelah reload data log
                 if (metodeInputAktif === "SCAN") document.getElementById('new-p-barcode').focus();
             }
         }
@@ -542,93 +534,6 @@
                 window.print();
             });
         }
-
-        function eksekusiTambahProdukBaru() {
-            const barcode = document.getElementById('new-p-barcode').value.trim();
-            const name = document.getElementById('new-p-name').value.trim();
-            const cost = document.getElementById('new-p-cost').value;
-            const selling = document.getElementById('new-p-selling').value;
-            const stock = document.getElementById('new-p-stock').value;
-            
-            if(!barcode || !name || cost < 0 || selling <= 0 || stock < 0) return alert("Form tidak valid!");
-
-            const payload = { action: "tambahProdukAdmin", barcode: barcode, product_name: name, cost_price: cost, selling_price: selling, stock: stock };
-            toggleLoading(true);
-            document.body.classList.add("pointer-events-none", "opacity-60");
-
-            fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
-            .then(res => res.json())
-            .then(result => {
-                document.body.classList.remove("pointer-events-none", "opacity-60");
-                toggleLoading(false);
-                if (result.success) {
-                    alert(result.message);
-                    document.getElementById('new-p-barcode').value = "";
-                    document.getElementById('new-p-name').value = "";
-                    muatDataLaporanSistem(true);
-                } else { alert(result.message); }
-            }).catch(() => { toggleLoading(false); document.body.classList.remove("pointer-events-none"); });
-        }
-
-        function eksekusiUpdateStokGudang() {
-            const barcode = document.getElementById('admin-product-select').value;
-            const stock = document.getElementById('admin-new-stock').value;
-            const subAction = document.getElementById('admin-stok-action-type').value; 
-            
-            if (!barcode || stock < 0) return alert("Isi jumlah unit!");
-
-            const payload = { 
-                action: "updateStokAdmin", 
-                barcode: barcode, 
-                stok_baru: stock,
-                sub_action: subAction 
-            };
-            
-            toggleLoading(true);
-            document.body.classList.add("pointer-events-none", "opacity-60");
-
-            fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
-            .then(res => res.json())
-            .then(result => {
-                document.body.classList.remove("pointer-events-none", "opacity-60");
-                toggleLoading(false);
-                if (result.success) { 
-                    alert(result.message); 
-                    muatDataLaporanSistem(true); 
-                } else { alert(result.message); }
-            }).catch(() => { toggleLoading(false); document.body.classList.remove("pointer-events-none"); });
-        }
-
-        function aktifkanLiveAutoSync() {
-            if(loopIntervalAktivitas) clearInterval(loopIntervalAktivitas);
-            loopIntervalAktivitas = setInterval(() => {
-                if (!document.hidden) { muatDataLaporanSistem(false); }
-            }, 25000); 
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            muatDataLaporanSistem(true);
-            aktifkanLiveAutoSync(); 
-            
-            // Pasang pemicu listener auto-focus scanner secara global di seluruh halaman admin
-            document.body.addEventListener('click', jalankanLocksAutoFocusScanner);
-        });
-
-        document.addEventListener("visibilitychange", () => {
-            if (!document.hidden) { muatDataLaporanSistem(false); }
-        });
     </script>
-
-    <style>
-        .show-only-on-pdf { display: none; }
-        .html2pdf__page-break { page-break-before: always; }
-        @media print {
-            .media-no-print { display: none !important; }
-            body { background-color: #ffffff !important; padding: 0 !important; }
-            .show-only-on-pdf { display: block !important; }
-        }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    </style>
 </body>
 </html>
