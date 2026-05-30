@@ -302,6 +302,7 @@
             ? { cashier_name: _sesiTersimpan.cashier_name, shift_id: _sesiTersimpan.shift_id }
             : { cashier_name: "", shift_id: "" };
         let kasirAktif = !!_sesiTersimpan;
+        let isAutoRestore = !!_sesiTersimpan; // hanya true saat restore otomatis, reset setelah pertama kali
         let selectedAcIndex = -1;
 
         // Restore riwayat transaksi shift dari localStorage
@@ -669,22 +670,32 @@
             let idShift = prompt("Masukkan ID/Kode Shift Kerja (Contoh: SF-01):", dataOperatorShift.shift_id || "");
             if (!idShift) return;
 
-            // Jika sesi sudah aktif (restore dari localStorage), tidak perlu modal awal lagi
-            let modal = "0";
-            if (!kasirAktif) {
+            // isAutoRestore = true hanya saat restore otomatis (refresh/sleep)
+            // Kalau user buka shift manual (termasuk setelah tutup shift), selalu minta modal
+            let modal;
+            if (isAutoRestore) {
+                // Restore otomatis — tidak kirim ke DB, tidak tanya modal
+                modal = null;
+            } else {
                 modal = prompt("Masukkan Besaran Uang Modal Awal Laci Kasir (Rp):", "500000");
                 if (!modal) return alert("Gagal memproses buka shift! Modal awal wajib diisi.");
             }
-            
+            isAutoRestore = false; // reset flag setelah dipakai sekali
+
             dataOperatorShift.cashier_name = nama;
             dataOperatorShift.shift_id = idShift;
             document.getElementById('active-cashier-label').innerText = nama;
             document.getElementById('active-shift-label').innerText = idShift;
             setStatusKasir(true);
 
-            // Operator membuka sesi shift baru, maka data rekap lokal dikosongkan total agar tidak tercampur
-            riwayatTransaksiShiftLokal = [];
-            simpanRiwayat();
+            // Operator membuka sesi shift baru (bukan restore), kosongkan riwayat
+            if (modal !== null) {
+                riwayatTransaksiShiftLokal = [];
+                simpanRiwayat();
+            }
+
+            // Hanya kirim ke DB jika ini buka shift manual (bukan restore)
+            if (modal === null) return;
 
             const payload = { action: "bukaShift", cashier_name: nama, shift_id: idShift, starting_cash: modal };
 
@@ -757,10 +768,12 @@
 
         window.addEventListener('DOMContentLoaded', function() {
             if (_sesiTersimpan) {
-                // Restore sesi tanpa prompt modal awal lagi
+                // Restore sesi otomatis — langsung aktif, tidak kirim ke DB
                 setStatusKasir(true);
+                // isAutoRestore tetap true, akan di-reset saat user klik Buka Shift manual
             } else {
                 setStatusKasir(false);
+                isAutoRestore = false;
             }
             muatKatalogProdukDariDatabase();
         });
