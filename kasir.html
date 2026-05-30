@@ -91,6 +91,7 @@
                 <span id="active-shift-label" class="font-bold text-amber-400">SF-01</span>
             </div>
             <div class="flex gap-1">
+                <button onclick="bukaModalRekapSesiLokal()" class="bg-amber-600 hover:bg-amber-700 font-black px-3 py-1.5 rounded-lg text-white transition active:scale-95 cursor-pointer">Rekap Sesi</button>
                 <button onclick="triggerModalBukaShift()" class="bg-blue-600 hover:bg-blue-700 font-black px-3 py-1.5 rounded-lg text-white transition active:scale-95 cursor-pointer">Buka Shift</button>
                 <button onclick="triggerModalTutupShift()" class="bg-rose-600 hover:bg-rose-700 font-black px-3 py-1.5 rounded-lg text-white transition active:scale-95 cursor-pointer">Tutup Shift</button>
             </div>
@@ -99,49 +100,19 @@
 
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-3 sm:p-4 overflow-y-auto lg:overflow-hidden min-h-0">
         
-        <div class="lg:col-span-7 flex flex-col gap-4 min-h-[550px] lg:min-h-0">
-            
-            <div class="flex-1 bg-white p-4 rounded-xl shadow-xs border border-slate-200 flex flex-col overflow-hidden min-h-[300px]">
-                <div class="flex gap-2 mb-3 shrink-0">
-                    <div class="relative flex-1">
-                        <span class="absolute left-3 top-3 text-slate-400 text-sm">🔍</span>
-                        <input type="text" id="pos-search-input" oninput="jalankanFilterCariProduk()" placeholder="Scan barcode atau ketik nama barang..." class="w-full border border-slate-200 pl-9 pr-4 py-2 rounded-lg bg-slate-50 focus:outline-none focus:border-emerald-500 font-medium text-sm">
-                    </div>
-                    <button onclick="bersihkanPencarianPOS()" class="bg-slate-200 hover:bg-slate-300 px-4 py-2 rounded-lg text-xs font-bold transition active:scale-95 cursor-pointer">Clear</button>
+        <div class="lg:col-span-7 bg-white p-4 rounded-xl shadow-xs border border-slate-200 flex flex-col min-h-[400px] lg:min-h-0 overflow-hidden">
+            <div class="flex gap-2 mb-4 shrink-0">
+                <div class="relative flex-1">
+                    <span class="absolute left-3 top-3 text-slate-400 text-sm">🔍</span>
+                    <input type="text" id="pos-search-input" oninput="jalankanFilterCariProduk()" placeholder="Scan barcode atau ketik nama barang..." class="w-full border border-slate-200 pl-9 pr-4 py-2 rounded-lg bg-slate-50 focus:outline-none focus:border-emerald-500 font-medium text-sm">
                 </div>
-
-                <div class="flex-1 overflow-y-auto no-scrollbar pr-1">
-                    <div id="catalog-products-container" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
-                </div>
+                <button onclick="bersihkanPencarianPOS()" class="bg-slate-200 hover:bg-slate-300 px-4 py-2 rounded-lg text-xs font-bold transition active:scale-95 cursor-pointer">Clear</button>
             </div>
 
-            <div class="h-48 bg-slate-900 text-white p-3 rounded-xl shadow-xs border border-slate-800 flex flex-col overflow-hidden shrink-0">
-                <div class="flex justify-between items-center pb-2 border-b border-slate-800 mb-2 shrink-0">
-                    <h3 class="text-xs font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
-                        <span>📊</span> Riwayat & Akumulasi Penjualan Shift Aktif
-                    </h3>
-                    <div class="text-[10px] font-mono bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
-                        Total Nota: <span id="shift-transaction-count" class="font-bold text-amber-400">0</span> | 
-                        Omzet: <span id="shift-total-omzet" class="font-bold text-emerald-400">Rp 0</span>
-                    </div>
-                </div>
-
-                <div class="flex-1 overflow-y-auto no-scrollbar text-[11px] font-mono">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="text-slate-400 border-b border-slate-800 sticky top-0 bg-slate-900">
-                                <th class="pb-1">No. Invoice</th>
-                                <th class="pb-1 text-center">Metode</th>
-                                <th class="pb-1 text-right">Total Jual</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-shift-sales-body" class="divide-y divide-slate-800/60 text-slate-300">
-                            <tr><td colspan="3" class="text-center py-6 text-slate-500 italic font-sans">Belum ada transaksi pada shift ini.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="flex-1 overflow-y-auto no-scrollbar pr-1">
+                <h3 class="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Hasil Katalog Barang:</h3>
+                <div id="catalog-products-container" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
             </div>
-
         </div>
 
         <div class="lg:col-span-5 bg-white p-4 rounded-xl shadow-xs border border-slate-200 flex flex-col min-h-[350px] lg:min-h-0 overflow-hidden">
@@ -189,6 +160,48 @@
         </div>
     </div>
 
+    <div id="modal-rekap-shift-lokal" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
+        <div class="bg-white w-full max-w-lg rounded-2xl border border-slate-200 shadow-xl overflow-hidden flex flex-col h-96">
+            <div class="bg-slate-900 text-white px-4 py-3 flex justify-between items-center shrink-0">
+                <div class="flex flex-col">
+                    <h3 class="text-xs font-black text-emerald-400 uppercase tracking-widest">📊 Rekapitulasi Internal Sesi Shift</h3>
+                    <p class="text-[10px] font-mono text-slate-400">Memantau total kecocokan kas laci fisik</p>
+                </div>
+                <button onclick="tutupModalRekapSesiLokal()" class="text-slate-400 hover:text-white font-black text-base cursor-pointer px-2">✕</button>
+            </div>
+            
+            <div class="bg-emerald-50 p-3 border-b border-emerald-100 grid grid-cols-2 gap-3 shrink-0 font-mono text-xs text-center">
+                <div class="bg-white p-2 rounded-lg border border-emerald-200/60">
+                    <span class="block text-[10px] text-slate-400 font-sans font-bold uppercase">Nota Terjual</span>
+                    <span id="modal-shift-count" class="text-sm font-black text-slate-900">0 Invoice</span>
+                </div>
+                <div class="bg-white p-2 rounded-lg border border-emerald-200/60">
+                    <span class="block text-[10px] text-slate-400 font-sans font-bold uppercase">Total Omzet</span>
+                    <span id="modal-shift-omzet" class="text-sm font-black text-emerald-700">Rp 0</span>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 no-scrollbar text-xs font-mono">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-slate-400 border-b border-slate-200 sticky top-0 bg-white pb-1">
+                            <th class="pb-1">No. Invoice</th>
+                            <th class="pb-1 text-center">Metode</th>
+                            <th class="pb-1 text-right">Total Jual</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-shift-table-body" class="divide-y divide-slate-100 text-slate-700">
+                        <tr><td colspan="3" class="text-center py-12 text-slate-400 italic font-sans">Belum ada transaksi sukses pada shift ini.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="bg-slate-50 p-3 text-right border-t border-slate-100 shrink-0">
+                <button onclick="tutupModalRekapSesiLokal()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 rounded-lg cursor-pointer transition active:scale-95">Selesai Memantau</button>
+            </div>
+        </div>
+    </div>
+
     <div id="container-struk-nota-print">
         <div style="text-align: center; font-weight: bold; font-size: 11.5px; tracking-wide; uppercase; margin-bottom: 0.5mm;">KAFE TOKO POS KASIR</div>
         <div style="text-align: center; font-size: 8.5px; color: #111;">
@@ -223,8 +236,8 @@
         let keranjangBelanja = [];
         let dataOperatorShift = { cashier_name: "Kasir 1", shift_id: "SF-01" };
         
-        // Array lokal untuk menampung transaksi khusus shift yang sedang aktif berjalan
-        let riwayatTransaksiShiftLokal = []; 
+        // Array penampung mutasi keuangan untuk shift aktif
+        let riwayatTransaksiShiftLokal = [];
 
         async function muatKatalogProdukDariDatabase() {
             try {
@@ -346,15 +359,17 @@
             document.getElementById('label-cash-change').innerText = sisa < 0 ? "Uang Kurang!" : `Rp ${sisa.toLocaleString('id-ID')}`;
         }
 
-        // BARU: FUNGSI UNTUK MERENDER DAN MENGAKUMULASIKAN NOTA YANG TERJUAL KHUSUS SHIFT AKTIF
-        function renderDanHitungUlangRekapSesiShift() {
-            const tableBody = document.getElementById('table-shift-sales-body');
+        // CONTROL EMULATOR MODAL POP-UP (CLEAN MANAGEMENT CODES)
+        function bukaModalRekapSesiLokal() {
+            const tableBody = document.getElementById('modal-shift-table-body');
             tableBody.innerHTML = '';
             
+            document.getElementById('modal-rekap-shift-lokal').classList.remove('hidden');
+            
             if (riwayatTransaksiShiftLokal.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-6 text-slate-500 italic font-sans">Belum ada transaksi pada shift ini.</td></tr>`;
-                document.getElementById('shift-transaction-count').innerText = "0";
-                document.getElementById('shift-total-omzet').innerText = "Rp 0";
+                tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-12 text-slate-400 italic font-sans">Belum ada transaksi sukses pada shift ini.</td></tr>`;
+                document.getElementById('modal-shift-count').innerText = "0 Sesi Invoice";
+                document.getElementById('modal-shift-omzet').innerText = "Rp 0";
                 return;
             }
 
@@ -362,16 +377,19 @@
             riwayatTransaksiShiftLokal.forEach(nota => {
                 akumulasiOmzetSesi += nota.grand_total;
                 tableBody.innerHTML += `
-                    <tr class="hover:bg-slate-800 transition">
-                        <td class="py-1.5 font-bold text-emerald-400">${nota.invoice}</td>
-                        <td class="py-1.5 text-center"><span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-300">${nota.method}</span></td>
-                        <td class="py-1.5 text-right font-bold text-white">Rp ${nota.grand_total.toLocaleString('id-ID')}</td>
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100/60">
+                        <td class="py-2.5 font-bold text-indigo-950">${nota.invoice}</td>
+                        <td class="py-2.5 text-center"><span class="bg-slate-100 font-bold px-1.5 py-0.5 rounded text-[10px] text-slate-600">${nota.method}</span></td>
+                        <td class="py-2.5 text-right font-bold text-slate-900">Rp ${nota.grand_total.toLocaleString('id-ID')}</td>
                     </tr>`;
             });
 
-            // Update widget ringkasan atas tabel secara real-time
-            document.getElementById('shift-transaction-count').innerText = riwayatTransaksiShiftLokal.length;
-            document.getElementById('shift-total-omzet').innerText = `Rp ${akumulasiOmzetSesi.toLocaleString('id-ID')}`;
+            document.getElementById('modal-shift-count').innerText = `${riwayatTransaksiShiftLokal.length} Invoice`;
+            document.getElementById('modal-shift-omzet').innerText = `Rp ${akumulasiOmzetSesi.toLocaleString('id-ID')}`;
+        }
+
+        function tutupModalRekapSesiLokal() {
+            document.getElementById('modal-rekap-shift-lokal').classList.add('hidden');
         }
 
         function eksekusiCheckoutTransaksi() {
@@ -399,18 +417,13 @@
             .then(res => {
                 document.body.classList.remove("pointer-events-none", "opacity-50");
                 if(res.success) {
-                    
-                    // Masukkan transaksi baru ke riwayat rekap sesi shift lokal sebelum dicetak
+                    // Simpan data ke histori lokal secara real-time sebelum print nota thermal
                     riwayatTransaksiShiftLokal.push({
                         invoice: res.invoice,
                         method: metode,
                         grand_total: total
                     });
 
-                    // Update tampilan tabel rekap shift
-                    renderDanHitungUlangRekapSesiShift();
-
-                    // --- FORMAT DATA NOTA UNTUK PRINTER ---
                     document.getElementById('print-invoice-id').innerText = res.invoice;
                     const skrg = new Date();
                     const formatWaktu = skrg.getDate().toString().padStart(2, '0') + '/' + 
@@ -464,9 +477,8 @@
             document.getElementById('active-cashier-label').innerText = nama;
             document.getElementById('active-shift-label').innerText = idShift;
 
-            // Bersihkan total riwayat shift lama karena operator membuka sesi shift baru
+            // Operator membuka sesi shift baru, maka data rekap lokal dikosongkan total agar tidak tercampur
             riwayatTransaksiShiftLokal = [];
-            renderDanHitungUlangRekapSesiShift();
 
             const payload = { action: "bukaShift", cashier_name: nama, shift_id: idShift, starting_cash: modal };
 
@@ -484,7 +496,6 @@
         }
 
         function triggerModalTutupShift() {
-            // Hitung otomatis omzet akumulasi lokal untuk memberikan gambaran ke kasir sebelum menghitung laci fisik
             let totalOmzetSesiIni = 0;
             riwayatTransaksiShiftLokal.forEach(n => totalOmzetSesiIni += n.grand_total);
 
