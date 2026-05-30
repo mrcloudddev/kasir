@@ -625,14 +625,28 @@
             fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
             .then(r => r.json())
             .then(res => {
-                if(!res.success) { 
-                    alert(res.message);
+                alert(res.message);
+                // Jika shift sudah berjalan aktif di DB (OPEN), kasir tetap dianggap aktif
+                const pesanShiftAktif = res.message && (
+                    res.message.toLowerCase().includes('berjalan aktif') ||
+                    res.message.toLowerCase().includes('open') ||
+                    res.message.toLowerCase().includes('sudah aktif') ||
+                    res.message.toLowerCase().includes('sedang berjalan')
+                );
+                if (res.success || pesanShiftAktif) {
+                    // Shift berhasil dibuka ATAU memang sudah aktif — kasir tetap aktif
+                    setStatusKasir(true);
+                } else {
+                    // Benar-benar gagal (misal: nama/ID salah, dsb)
                     document.getElementById('active-cashier-label').innerText = "-";
                     document.getElementById('active-shift-label').innerText = "-";
                     setStatusKasir(false);
-                } else {
-                    alert(res.message);
                 }
+            })
+            .catch(() => {
+                document.getElementById('active-cashier-label').innerText = "-";
+                document.getElementById('active-shift-label').innerText = "-";
+                setStatusKasir(false);
             });
         }
 
