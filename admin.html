@@ -198,7 +198,7 @@
                         </table>
                     </div>
 
-                    <div class="border border-slate-100 rounded-lg overflow-x-auto">
+                    <div class="border border-slate-100 rounded-lg overflow-x-auto media-no-print">
                         <table class="w-full text-left border-collapse min-w-[480px]">
                             <thead>
                                 <tr class="bg-slate-900 text-white font-bold sticky top-0 text-[11px]">
@@ -334,7 +334,6 @@
             }
         }
 
-        // REVOLUSI LOGIKA PERHITUNGAN: Menambahkan Kalkulasi Baris Grand Total Toko Di Sisi Paling Bawah
         function renderTabelRekapShift() {
             const shiftsBody = document.getElementById('table-shifts-body');
             const summaryBody = document.getElementById('table-summary-kasir-body');
@@ -369,8 +368,6 @@
             }
             
             let ringkasanKasirMap = {};
-            
-            // Variabel akumulator untuk menampung total kumulatif seluruh toko hari ini
             let grandTotalModalSeluruhToko = 0;
             let grandTotalLaciSeluruhToko = 0;
 
@@ -386,7 +383,6 @@
                 ringkasanKasirMap[s.cashier_name].totalModal += modalAwal;
                 ringkasanKasirMap[s.cashier_name].totalLaci += uangLaciAktual;
 
-                // Hitung penjumlahan kumulatif untuk baris Grand Total penutup
                 grandTotalModalSeluruhToko += modalAwal;
                 grandTotalLaciSeluruhToko += uangLaciAktual;
 
@@ -402,7 +398,6 @@
                     </tr>`;
             });
 
-            // Suntikkan baris individual per staf kasir
             for (let namaKasir in ringkasanKasirMap) {
                 summaryBody.innerHTML += `
                     <tr class="hover:bg-indigo-100/40 transition">
@@ -412,7 +407,6 @@
                     </tr>`;
             }
 
-            // BARU: Suntikkan Baris Penutup "GRAND TOTAL" di bagian paling bawah tabel ringkasan
             summaryBody.innerHTML += `
                 <tr class="bg-indigo-900 text-white font-black border-t-2 border-slate-950">
                     <td class="p-2.5 text-left tracking-wider font-bold">🏆 GRAND TOTAL TOKO</td>
@@ -421,18 +415,17 @@
                 </tr>`;
         }
 
+        // FIX SINKRONISASI: Menghilangkan total rincian tabel bawah dari dokumen cetak PDF agar bersih maksimal
         function unduhLaporanHarianPDF() {
             if(document.getElementById('table-shifts-body').innerText.includes('Tidak ada rekap')) {
                 return alert("Gagal mencetak! Tidak ada data laporan rekap shift untuk dicetak pada tanggal ini.");
             }
             
             const tanggalTarget = document.getElementById('filter-shift-date').value.trim();
-            
-            const ringkasanTabelHtml = document.getElementById('table-summary-kasir-body').parentNode.outerHTML;
-            const rincianTabelHtml = document.getElementById('table-shifts-body').parentNode.outerHTML;
+            const ringkasanTabelHtml = document.getElementById('print-summary-area-clone') ? document.getElementById('print-summary-area-clone').innerHTML : document.getElementById('table-summary-kasir-body').parentNode.outerHTML;
 
             const elemenIsolasiCetak = document.createElement('div');
-            elemenIsolasiCetak.style.padding = '10mm';
+            elemenIsolasiCetak.style.padding = '12mm';
             elemenIsolasiCetak.style.fontFamily = 'monospace';
             elemenIsolasiCetak.style.backgroundColor = '#ffffff';
 
@@ -442,36 +435,40 @@
                     <p style="margin: 2px 0 0 0; font-size: 11px; font-weight: bold; color: #555;">Periode Penjualan Audit: ${tanggalTarget}</p>
                 </div>
                 
-                <div style="margin-bottom: 6mm;">
-                    <div style="background-color: #000; color: #fff; padding: 4px 8px; font-size: 11px; font-weight: bold; margin-bottom: 2mm;">
-                        I. RINGKASAN SETORAN KUMULATIF PER NAMA KASIR & TOTAL AKHIR TOKO
+                <div style="margin-bottom: 12mm;">
+                    <div style="background-color: #000; color: #fff; padding: 4px 8px; font-size: 11px; font-weight: bold; margin-bottom: 3mm; text-transform: uppercase;">
+                        I. Laporan Ringkasan Setoran Akumulatif Toko
                     </div>
                     ${ringkasanTabelHtml}
                 </div>
-
-                <div>
-                    <div style="background-color: #000; color: #fff; padding: 4px 8px; font-size: 11px; font-weight: bold; margin-bottom: 2mm;">
-                        II. RINCIAN LOG SESI SHIFT AKTIF (DETAIL)
-                    </div>
-                    ${rincianTabelHtml}
-                </div>
                 
-                <div style="margin-top: 15mm; text-align: right; font-size: 10px; font-weight: bold;">
-                    Dicetak Otomatis oleh Sistem POS Kasir<br>
-                    Waktu Cetak Dokumen: ${new Date().toLocaleString('id-ID')}
+                <div style="margin-top: 25mm; display: flex; justify-content: space-between; font-size: 11px; font-weight: bold;">
+                    <div style="text-align: center; width: 45mm;">
+                        Dilaporkan Oleh,<br><br><br><br>
+                        ( ........................ )<br>
+                        <span style="font-size: 9px; color: #666;">Staf Supervisor Kasir</span>
+                    </div>
+                    <div style="text-align: center; width: 45mm;">
+                        Disetujui Oleh,<br><br><br><br>
+                        ( ........................ )<br>
+                        <span style="font-size: 9px; color: #666;">Owner / Pemilik Toko</span>
+                    </div>
                 </div>
-            </div>`;
+
+                <div style="margin-top: 15mm; text-align: center; font-size: 9px; color: #777; border-top: 1px dashed #ccc; padding-top: 2mm;">
+                    Dokumen ini sah dirilis otomatis oleh Sistem POS Cloud Database.<br>
+                    Waktu Cetak: ${new Date().toLocaleString('id-ID')}
+                </div>`;
 
             const opsiKonfigurasiPDF = {
                 margin:       [10, 10, 10, 10],
                 filename:     `Laporan_Harian_POS_${tanggalTarget}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                html2canvas:  { scale: 2.5, useCORS: true, logging: false },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
             html2pdf().set(opsiKonfigurasiPDF).from(elemenIsolasiCetak).save().catch(err => {
-                alert("Metode Cetak Utama Tertahan, Mengaktifkan Sistem Cetak Cadangan Browser...");
                 window.print();
             });
         }
