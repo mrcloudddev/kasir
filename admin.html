@@ -407,15 +407,15 @@
                     </tr>`;
             }
 
+            // PERBAIKAN: Menghilangkan ikon piala (🏆) agar tampilan dokumen terlihat formal, bersih, dan berstandar ritel profesional
             summaryBody.innerHTML += `
                 <tr class="bg-indigo-900 text-white font-black border-t-2 border-slate-950">
-                    <td class="p-2.5 text-left tracking-wider font-bold">🏆 GRAND TOTAL TOKO</td>
+                    <td class="p-2.5 text-left tracking-wider font-bold">GRAND TOTAL TOKO</td>
                     <td class="p-2.5 text-right font-mono">Rp ${grandTotalModalSeluruhToko.toLocaleString('id-ID')}</td>
                     <td class="p-2.5 text-right font-mono text-amber-300 font-black">Rp ${grandTotalLaciSeluruhToko.toLocaleString('id-ID')}</td>
                 </tr>`;
         }
 
-        // FIX SINKRONISASI: Menghilangkan total rincian tabel bawah dari dokumen cetak PDF agar bersih maksimal
         function unduhLaporanHarianPDF() {
             if(document.getElementById('table-shifts-body').innerText.includes('Tidak ada rekap')) {
                 return alert("Gagal mencetak! Tidak ada data laporan rekap shift untuk dicetak pada tanggal ini.");
@@ -442,7 +442,7 @@
                     ${ringkasanTabelHtml}
                 </div>
                 
-                <div style="margin-top: 25mm; display: flex; justify-content: space-between; font-size: 11px; font-weight: bold;">
+                <div style="margin-top: 25mm; display: flex; justify-between; font-size: 11px; font-weight: bold;">
                     <div style="text-align: center; width: 45mm;">
                         Dilaporkan Oleh,<br><br><br><br>
                         ( ........................ )<br>
