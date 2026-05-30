@@ -8,532 +8,100 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
-<body class="bg-slate-50 font-sans min-h-screen text-slate-900 selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-50 font-sans min-h-screen text-slate-900">
 
-    <header class="bg-indigo-900 text-white p-4 shadow-md flex flex-col sm:flex-row justify-between items-center gap-3 media-no-print">
-        <div class="flex items-center gap-3">
-            <h1 class="text-lg sm:text-xl font-bold tracking-wide text-center sm:text-left">👑 SYSTEM CONTROL PANEL (ADMIN ONLY)</h1>
-        </div>
-        <div class="flex items-center justify-between sm:justify-end gap-3 text-xs w-full sm:w-auto">
-            <span id="sync-indicator" class="bg-emerald-500 text-white font-bold px-2.5 py-1 rounded-md animate-pulse flex items-center gap-1 shadow-xs">
-                <span>●</span> Live Auto-Sync
-            </span>
-            <button onclick="muatDataLaporanSistem(true)" class="bg-indigo-700 hover:bg-indigo-600 px-3 py-1.5 rounded-md font-bold transition flex items-center gap-1 cursor-pointer active:scale-95">
-                🔄 Force Refresh
-            </button>
-        </div>
+    <header class="bg-indigo-900 text-white p-4 shadow-md flex justify-between items-center media-no-print">
+        <h1 class="text-lg font-bold">👑 ADMIN CONTROL CENTER</h1>
+        <button onclick="muatDataLaporanSistem(true)" class="bg-indigo-700 px-3 py-1.5 rounded text-xs font-bold cursor-pointer">🔄 Refresh Data</button>
     </header>
 
-    <div class="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
-        
-        <div id="loading-state" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl font-semibold shadow-xs media-no-print">
-            Sedang berkomunikasi dengan database terpusat...
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 media-no-print">
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
-                <div>
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 border-b border-slate-100 pb-2">
-                        <h2 class="text-xs font-black text-indigo-700 uppercase tracking-widest flex items-center gap-1">
-                            <span>➕</span> Daftarkan Master Produk Baru
-                        </h2>
-                        <div class="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-[10px] font-black tracking-wider uppercase">
-                            <button onclick="gantiMetodeInputBarang('SCAN')" id="btn-mode-scan" class="px-2.5 py-1 rounded-md transition duration-200 cursor-pointer bg-indigo-600 text-white shadow-2xs">
-                                📷 Scan
-                            </button>
-                            <button onclick="gantiMetodeInputBarang('MANUAL')" id="btn-mode-manual" class="px-2.5 py-1 rounded-md transition duration-200 cursor-pointer text-slate-500 hover:text-slate-900">
-                                ⌨️ Manual
-                            </button>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3 text-xs">
-                        <div class="col-span-2">
-                            <label class="block text-slate-500 font-bold mb-1 flex justify-between">
-                                <span>Kode Barcode / EAN-13:</span>
-                                <span id="badge-input-status" class="text-[9px] font-mono text-indigo-600 bg-indigo-50 px-1.5 rounded animate-pulse">Mode Scanner Aktif (Auto-Focus)</span>
-                            </label>
-                            <input type="text" id="new-p-barcode" placeholder="Scan barcode atau ketik angka..." class="w-full border border-slate-200 p-2.5 rounded-lg font-mono bg-slate-50 focus:outline-none focus:border-indigo-500 text-sm font-bold transition">
-                        </div>
-                        <div class="col-span-2">
-                            <label class="block text-slate-500 font-bold mb-1">Nama Lengkap Produk:</label>
-                            <input type="text" id="new-p-name" placeholder="Contoh: Kopi Caramel Latte XL" class="w-full border border-slate-200 p-2.5 rounded-lg font-bold bg-slate-50 focus:outline-none focus:border-indigo-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-slate-500 font-bold mb-1">Harga Modal (Rp):</label>
-                            <input type="number" id="new-p-cost" value="0" class="w-full border border-slate-200 p-2.5 rounded-lg font-mono text-right bg-slate-50 focus:outline-none focus:border-indigo-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-slate-500 font-bold mb-1">Harga Jual Toko (Rp):</label>
-                            <input type="number" id="new-p-selling" value="0" class="w-full border border-slate-200 p-2.5 rounded-lg font-mono text-right bg-slate-50 focus:outline-none focus:border-indigo-500 text-sm">
-                        </div>
-                        <div class="col-span-2">
-                            <label class="block text-slate-500 font-bold mb-1">Jumlah Stok Awal Gudang:</label>
-                            <input type="number" id="new-p-stock" value="10" class="w-full border border-slate-200 p-2.5 rounded-lg text-center font-mono text-sm bg-slate-50 focus:outline-none focus:border-indigo-500">
-                        </div>
-                    </div>
+    <div class="p-6 max-w-7xl mx-auto space-y-6">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col min-h-[24rem]">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xs font-black uppercase text-amber-800">Laporan Rekap Shift</h2>
+                <div class="flex gap-2">
+                    <input type="date" id="filter-shift-date" onchange="renderTabelRekapShift()" class="border p-1 text-xs font-mono">
+                    <button onclick="unduhLaporanHarianExcel()" class="bg-emerald-600 text-white px-2 py-1 rounded text-xs font-bold">🟢 Excel</button>
+                    <button onclick="unduhLaporanHarianPDF()" class="bg-rose-600 text-white px-2 py-1 rounded text-xs font-bold">📥 PDF</button>
                 </div>
-                <button onclick="eksekusiTambahProdukBaru()" class="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg transition uppercase text-xs tracking-wider cursor-pointer shadow-xs active:scale-[0.99]">
-                    Simpan & Amankan ke Gudang
-                </button>
             </div>
 
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
-                <div>
-                    <h2 class="text-xs font-black text-amber-700 uppercase tracking-widest mb-3 flex items-center gap-1">
-                        <span>✏️</span> Manajemen & Koreksi Stok Rak Gudang
-                    </h2>
-                    <div class="space-y-3 text-xs">
-                        <div>
-                            <label class="block text-slate-500 font-bold mb-1">Pilih Produk Gudang / Rak:</label>
-                            <select id="admin-product-select" class="w-full border border-slate-200 p-2.5 rounded-lg bg-slate-50 font-bold focus:outline-none text-sm"></select>
-                        </div>
-                        <div>
-                            <label class="block text-slate-500 font-bold mb-1">Pilih Metode Aksi:</label>
-                            <select id="admin-stok-action-type" class="w-full border border-slate-200 p-2.5 rounded-lg bg-amber-50 text-amber-900 font-black focus:outline-none text-sm">
-                                <option value="TAMBAH">➕ Tambah Jumlah Stok Baru (Ada Kiriman Supplier)</option>
-                                <option value="GANTI">🔄 Ganti Total Angka Sesuai Fisik (Sebab Opname/Rusak)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-slate-500 font-bold mb-1">Jumlah Unit/Pcs:</label>
-                            <input type="number" id="admin-new-stock" value="10" class="w-full border border-slate-200 p-2.5 rounded-lg text-center text-lg font-mono font-bold focus:outline-none">
-                        </div>
-                    </div>
-                </div>
-                <button onclick="eksekusiUpdateStokGudang()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition uppercase text-xs tracking-wider cursor-pointer mt-4 shadow-xs active:scale-[0.99]">
-                    Proses Update Data Stok
-                </button>
+            <div class="flex-1 overflow-y-auto no-scrollbar">
+                <table id="table-summary-excel-target" class="w-full text-left text-[10px] border-collapse bg-indigo-50/40">
+                    <thead>
+                        <tr class="bg-indigo-100 font-bold border-b border-indigo-200">
+                            <th class="p-2">Nama Kasir</th>
+                            <th class="p-2 text-right">Modal</th>
+                            <th class="p-2 text-right text-emerald-800">Laci</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-summary-kasir-body">
+                        <tr><td colspan="3" class="text-center py-4 text-slate-500">Memuat data...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 media-no-print">
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-72">
-                <h2 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                    <span class="text-emerald-600">📈</span> Histori Penjualan POS (Live)
-                </h2>
-                <div class="overflow-auto flex-1 text-[11px] border border-slate-100 rounded-lg">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-100 border-b border-slate-200 text-slate-500 font-bold sticky top-0">
-                                <th class="p-2.5 whitespace-nowrap">No Invoice</th>
-                                <th class="p-2.5 whitespace-nowrap">Kasir / Shift</th>
-                                <th class="p-2.5 text-right whitespace-nowrap">Omzet Jual</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-sales-body" class="divide-y divide-slate-100 text-slate-700"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-72">
-                <h2 class="text-xs font-black text-rose-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                    <span class="text-rose-600">🔒</span> Observability Activity Logs (Live)
-                </h2>
-                <div class="overflow-auto flex-1 text-[11px] border border-slate-100 rounded-lg">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-100 border-b border-slate-200 text-slate-500 font-bold sticky top-0">
-                                <th class="p-2.5 whitespace-nowrap">Waktu Log</th>
-                                <th class="p-2.5 whitespace-nowrap">User</th>
-                                <th class="p-2.5 whitespace-nowrap">Aksi</th>
-                                <th class="p-2.5 whitespace-nowrap">Detail Keterangan</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-logs-body" class="divide-y divide-slate-100 font-mono text-[10px] text-slate-600"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96 media-no-print">
-                <h2 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                    <span>📦</span> Live Real-Time Master Stok Gudang
-                </h2>
-                <div class="overflow-auto flex-1 text-[11px] border border-slate-100 rounded-lg">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-900 text-white font-bold sticky top-0">
-                                <th class="p-2.5 whitespace-nowrap">Nama Produk</th>
-                                <th class="p-2.5 text-right whitespace-nowrap">Harga Jual</th>
-                                <th class="p-2.5 text-center whitespace-nowrap">Sisa Stok</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-stock-body" class="divide-y divide-slate-200 text-slate-700 font-medium"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col min-h-[24rem] h-auto overflow-hidden" id="area-pdf-laporan">
-                <div class="flex flex-col mb-3 border-b border-slate-100 pb-2.5 gap-2">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 media-no-print">
-                        <h2 class="text-xs font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">
-                            <span>📋</span> Laporan Harian Rekap Shift Kerja Kasir
-                        </h2>
-                        
-                        <div class="flex flex-row items-center gap-3 text-[11px] w-full sm:w-auto justify-between sm:justify-end">
-                            <div class="flex items-center gap-1.5">
-                                <span class="text-slate-400 font-bold">Tanggal:</span>
-                                <input type="date" id="filter-shift-date" onchange="renderTabelRekapShift()" class="border border-slate-300 rounded p-1 bg-white focus:outline-none focus:border-indigo-500 font-mono font-bold text-xs">
-                            </div>
-                            <div class="flex gap-1.5">
-                                <button onclick="unduhLaporanHarianExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-2.5 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer transition shadow-2xs active:scale-95 text-xs">
-                                    🟢 Excel
-                                </button>
-                                <button onclick="unduhLaporanHarianPDF()" class="bg-rose-600 hover:bg-rose-700 text-white font-black px-2.5 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer transition shadow-2xs active:scale-95 text-xs">
-                                    📥 PDF
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="text-[10px] sm:text-[11px] bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1.5 rounded-lg font-mono font-bold flex justify-between items-center">
-                        <span>📅 Periode: <span id="label-date-view" class="text-indigo-700"></span></span>
-                        <span class="text-slate-400">Terdeteksi: <span id="label-count-view" class="text-slate-700">0</span> Sesi</span>
-                    </div>
-                </div>
-                
-                <div id="rekap-scroll-wrapper" class="flex-1 flex flex-col gap-4 w-full overflow-y-auto no-scrollbar pr-1">
-                    <div class="hidden show-only-on-pdf mb-4 text-center border-b-2 border-slate-950 pb-2">
-                        <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider">REKAP OPERASIONAL HARIAN LAPORAN SHIFT KASIR</h3>
-                        <p class="text-[10px] font-mono text-slate-500 font-bold">Tanggal Audit: <span id="pdf-date-title"></span></p>
-                    </div>
-
-                    <div class="border border-indigo-100 rounded-xl overflow-hidden shadow-2xs">
-                        <div class="bg-indigo-900 text-white px-3 py-1.5 text-[10px] font-black tracking-wider uppercase">
-                            📊 RINGKASAN SETORAN AKUMULATIF PER NAMA KASIR
-                        </div>
-                        <table id="table-summary-excel-target" class="w-full text-left border-collapse font-mono text-[10px] bg-indigo-50/40">
-                            <thead>
-                                <tr class="bg-indigo-100/80 text-indigo-900 font-bold border-b border-indigo-200">
-                                    <th class="p-2">Nama Staff Kasir</th>
-                                    <th class="p-2 text-right">Total Uang Modal</th>
-                                    <th class="p-2 text-right text-emerald-800">Total Uang Laci</th>
-                                </tr>
-                            </thead>
-                            <tbody id="table-summary-kasir-body" class="divide-y divide-indigo-100 font-bold text-indigo-950">
-                                <tr><td colspan="3" class="text-center py-3 text-slate-400 italic font-sans font-normal">Belum ada data shift kasir...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="border border-slate-200 rounded-xl overflow-x-auto shadow-2xs media-no-print">
-                        <table class="w-full text-left border-collapse min-w-[480px]">
-                            <thead>
-                                <tr class="bg-slate-900 text-white font-bold text-[10px] uppercase tracking-wider">
-                                    <th class="p-2.5">ID Shift</th>
-                                    <th class="p-2.5">Staf Kasir</th>
-                                    <th class="p-2.5 text-right">Modal</th>
-                                    <th class="p-2.5 text-right">Uang Laci</th>
-                                    <th class="p-2.5 text-center">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="table-shifts-body" class="divide-y divide-slate-200 text-slate-600 font-mono text-[10px]">
-                                <tr><td colspan="5" class="text-center py-8 text-slate-400 italic bg-white">Memuat database rekap laporan...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
     </div>
 
     <script>
+        // PASTIKAN URL INI ADALAH URL DEPLOYMENT GOOGLE APPS SCRIPT ANDA
         const API_URL = "https://script.google.com/macros/s/AKfycbwyWjLnncrQMhpd-zT2xRZqPFhN_0b9hKWcTDyqch2vQexrsnuZULJkSbOWRTGER6mi/exec";
-        let loopIntervalAktivitas;
         let globalDataShifts = [];
-        let metodeInputAktif = "SCAN"; 
-
-        function toggleLoading(show) {
-            document.getElementById('loading-state').classList.toggle('hidden', !show);
-        }
-
-        function setIndicatorStatus(isSyncing) {
-            const indicator = document.getElementById('sync-indicator');
-            if (isSyncing) {
-                indicator.innerHTML = "<span>🔄</span> Syncing...";
-                indicator.className = "bg-amber-500 text-white font-bold px-2 py-1 rounded-sm";
-            } else {
-                indicator.innerHTML = "<span>●</span> Live Auto-Sync";
-                indicator.className = "bg-emerald-500 text-white font-bold px-2 py-1 rounded-sm animate-pulse";
-            }
-        }
-
-        function setDefaultFilterDate() {
-            const inputTanggal = document.getElementById('filter-shift-date');
-            if(!inputTanggal.value) {
-                const hariIni = new Date();
-                const yyyy = hariIni.getFullYear();
-                const mm = String(hariIni.getMonth() + 1).padStart(2, '0');
-                const dd = String(hariIni.getDate()).padStart(2, '0');
-                inputTanggal.value = `${yyyy}-${mm}-${dd}`;
-            }
-        }
-
-        function gantiMetodeInputBarang(mode) {
-            metodeInputAktif = mode;
-            const btnScan = document.getElementById('btn-mode-scan');
-            const btnManual = document.getElementById('btn-mode-manual');
-            const badgeStatus = document.getElementById('badge-input-status');
-            const inputBarcode = document.getElementById('new-p-barcode');
-
-            if (mode === "SCAN") {
-                btnScan.className = "px-2.5 py-1 rounded-md transition duration-200 cursor-pointer bg-indigo-600 text-white shadow-2xs";
-                btnManual.className = "px-2.5 py-1 rounded-md transition duration-200 cursor-pointer text-slate-500 hover:text-slate-900";
-                badgeStatus.innerText = "Mode Scanner Aktif (Auto-Focus)";
-                badgeStatus.className = "text-[9px] font-mono text-indigo-600 bg-indigo-50 px-1.5 rounded animate-pulse";
-                inputBarcode.focus();
-            } else {
-                btnManual.className = "px-2.5 py-1 rounded-md transition duration-200 cursor-pointer bg-indigo-600 text-white shadow-2xs";
-                btnScan.className = "px-2.5 py-1 rounded-md transition duration-200 cursor-pointer text-slate-500 hover:text-slate-900";
-                badgeStatus.innerText = "Mode Ketik Manual";
-                badgeStatus.className = "text-[9px] font-mono text-amber-700 bg-amber-50 px-1.5 rounded font-bold";
-            }
-        }
-
-        function jalankanLocksAutoFocusScanner() {
-            if (metodeInputAktif === "SCAN") {
-                const inputBarcode = document.getElementById('new-p-barcode');
-                if (document.activeElement !== inputBarcode && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') {
-                    inputBarcode.focus();
-                }
-            }
-        }
-
-        async function muatDropdownDanTabelStok() {
-            try {
-                const res = await fetch(`${API_URL}?action=getProduk`, { method: 'GET', mode: 'cors' });
-                const txt = await res.text();
-                const result = JSON.parse(txt);
-                
-                if (result.success || Array.isArray(result)) {
-                    const select = document.getElementById('admin-product-select');
-                    const stockBody = document.getElementById('table-stock-body');
-                    const dataArray = Array.isArray(result) ? result : result.data;
-                    
-                    const selectedValueBefore = select.value;
-                    select.innerHTML = '';
-                    stockBody.innerHTML = '';
-                    
-                    dataArray.forEach(p => {
-                        select.innerHTML += `<option value="${p.barcode}">${p.product_name} (Sisa Rak: ${p.stock})</option>`;
-                        
-                        let stokBadgeClass = "bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-0.5 rounded";
-                        if (parseInt(p.stock) === 0) {
-                            stokBadgeClass = "bg-rose-100 text-rose-700 border border-rose-300 font-black px-2 py-0.5 rounded";
-                        } else if (parseInt(p.stock) <= 10) {
-                            stokBadgeClass = "bg-amber-50 text-amber-700 border border-amber-200 font-bold px-2 py-0.5 rounded";
-                        }
-
-                        stockBody.innerHTML += `
-                            <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                                <td class="p-2.5 font-bold text-slate-900">${p.product_name}</td>
-                                <td class="p-2.5 text-right text-indigo-700 font-mono font-bold">Rp ${parseInt(p.selling_price || 0).toLocaleString('id-ID')}</td>
-                                <td class="p-2.5 text-center"><span class="${stokBadgeClass}">${p.stock} Pcs</span></td>
-                            </tr>`;
-                    });
-                    if(selectedValueBefore) select.value = selectedValueBefore;
-                }
-            } catch (error) { console.error(error); }
-        }
 
         async function muatDataLaporanSistem(pakeSpinner = false) {
-            if(pakeSpinner) toggleLoading(true);
-            setIndicatorStatus(true);
-            setDefaultFilterDate();
-            
             try {
-                await muatDropdownDanTabelStok();
-                
                 const res = await fetch(`${API_URL}?action=getLaporanAdmin`, { method: 'GET', mode: 'cors' });
+                
+                if (!res.ok) throw new Error("Gagal terhubung ke server (HTTP " + res.status + ")");
+                
                 const txt = await res.text();
                 const result = JSON.parse(txt);
                 
-                if (result.success || result.penjualan) {
-                    const salesBody = document.getElementById('table-sales-body');
-                    salesBody.innerHTML = '';
-                    result.penjualan.reverse().forEach(r => {
-                        salesBody.innerHTML += `
-                            <tr class="hover:bg-slate-50 transition">
-                                <td class="p-2 font-mono font-bold text-indigo-950 whitespace-nowrap">${r.invoice_number}</td>
-                                <td class="p-2 whitespace-nowrap"><strong>${r.cashier_name}</strong> (${r.shift_id})</td>
-                                <td class="p-2 text-right font-mono font-bold text-emerald-600 whitespace-nowrap">Rp ${parseInt(r.grand_total).toLocaleString('id-ID')}</td>
-                            </tr>`;
-                    });
-
-                    const logsBody = document.getElementById('table-logs-body');
-                    logsBody.innerHTML = '';
-                    result.logs.reverse().forEach(log => {
-                        logsBody.innerHTML += `
-                            <tr class="hover:bg-slate-50 transition">
-                                <td class="p-2 text-slate-400 whitespace-nowrap">${log.timestamp}</td>
-                                <td class="p-2 font-bold text-slate-700 whitespace-nowrap">${log.user_name}</td>
-                                <td class="p-2 whitespace-nowrap"><span class="bg-indigo-50 text-indigo-700 px-1 py-0.5 rounded text-[9px] font-bold uppercase">${log.action}</span></td>
-                                <td class="p-2 text-slate-600 min-w-[200px] max-w-xs truncate">${log.description}</td>
-                            </tr>`;
-                    });
-
+                if (result.success || result.shifts) {
                     globalDataShifts = result.shifts || [];
                     renderTabelRekapShift();
+                } else {
+                    throw new Error("Format data tidak valid.");
                 }
-            } catch (error) { console.error(error); } finally {
-                if(pakeSpinner) toggleLoading(false);
-                setIndicatorStatus(false);
-                if (metodeInputAktif === "SCAN") document.getElementById('new-p-barcode').focus();
+            } catch (error) {
+                // PESAN DEBUG: Ini akan muncul jika ada masalah koneksi
+                alert("Gagal memuat data: " + error.message + "\n\nPastikan URL Deployment Google Apps Script sudah benar dan diset 'Anyone'.");
+                console.error(error);
             }
         }
 
         function renderTabelRekapShift() {
-            const shiftsBody = document.getElementById('table-shifts-body');
             const summaryBody = document.getElementById('table-summary-kasir-body');
-            
-            shiftsBody.innerHTML = '';
             summaryBody.innerHTML = '';
             
             const tanggalTarget = document.getElementById('filter-shift-date').value.trim(); 
-            document.getElementById('pdf-date-title').innerText = tanggalTarget;
-            document.getElementById('label-date-view').innerText = tanggalTarget;
-            
-            if (!tanggalTarget) {
-                shiftsBody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400 italic bg-white">Pilih tanggal terlebih dahulu...</td></tr>`;
-                summaryBody.innerHTML = `<tr><td colspan="3" class="text-center py-3 text-slate-400 italic bg-white">Pilih tanggal terlebih dahulu...</td></tr>`;
-                document.getElementById('label-count-view').innerText = "0";
-                return;
-            }
+            if (!tanggalTarget) return;
 
             const dataTerfilter = globalDataShifts.filter(s => {
-                let waktuAsli = s.tanggal || s.start_time || s.waktu_buka;
-                if (!waktuAsli) return false;
-                let strWaktu = waktuAsli.toString().trim();
-                return strWaktu.includes(tanggalTarget);
+                let waktuAsli = s.tanggal || s.start_time || s.waktu_buka || "";
+                return waktuAsli.toString().includes(tanggalTarget);
             });
-            
-            document.getElementById('label-count-view').innerText = dataTerfilter.length;
             
             if (dataTerfilter.length === 0) {
-                shiftsBody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400 italic bg-white">Tidak ada rekap aktivitas shift kasir pada tanggal ${tanggalTarget}.</td></tr>`;
-                summaryBody.innerHTML = `<tr><td colspan="3" class="text-center py-3 text-slate-400 italic bg-white">Tidak ada setoran kasir...</td></tr>`;
+                summaryBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-slate-400 italic">Tidak ada data untuk tanggal ini.</td></tr>`;
                 return;
             }
-            
+
             let ringkasanKasirMap = {};
-            let grandTotalModalSeluruhToko = 0;
-            let grandTotalLaciSeluruhToko = 0;
-
-            dataTerfilter.reverse().forEach(s => {
-                let statusStyle = s.status === "open" ? "bg-blue-100 text-blue-800 border border-blue-200 animate-pulse font-bold" : "bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold";
-                
-                let modalAwal = parseInt(s.starting_cash || 0, 10);
-                let uangLaciAktual = parseInt(s.actual_cash || 0, 10);
-
-                if (!ringkasanKasirMap[s.cashier_name]) {
-                    ringkasanKasirMap[s.cashier_name] = { totalModal: 0, totalLaci: 0 };
-                }
-                ringkasanKasirMap[s.cashier_name].totalModal += modalAwal;
-                ringkasanKasirMap[s.cashier_name].totalLaci += uangLaciAktual;
-
-                grandTotalModalSeluruhToko += modalAwal;
-                grandTotalLaciSeluruhToko += uangLaciAktual;
-
-                shiftsBody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100 text-slate-700 font-medium">
-                        <td class="p-2.5 font-bold text-indigo-950">${s.shift_id}</td>
-                        <td class="p-2.5 text-slate-900 font-bold">${s.cashier_name}</td>
-                        <td class="p-2.5 text-right text-slate-500 font-mono">Rp ${modalAwal.toLocaleString('id-ID')}</td>
-                        <td class="p-2.5 text-right font-bold font-mono ${s.status === 'open' ? 'text-blue-500 italic font-medium' : 'text-emerald-700'}">
-                            ${s.status === 'open' ? 'Sedang Buka' : 'Rp ' + uangLaciAktual.toLocaleString('id-ID')}
-                        </td>
-                        <td class="p-2.5 text-center"><span class="px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider ${statusStyle}">${s.status}</span></td>
-                    </tr>`;
+            dataTerfilter.forEach(s => {
+                let modal = parseInt(s.starting_cash || 0, 10);
+                let laci = parseInt(s.actual_cash || 0, 10);
+                if (!ringkasanKasirMap[s.cashier_name]) ringkasanKasirMap[s.cashier_name] = { m: 0, l: 0 };
+                ringkasanKasirMap[s.cashier_name].m += modal;
+                ringkasanKasirMap[s.cashier_name].l += laci;
             });
 
-            for (let namaKasir in ringkasanKasirMap) {
-                summaryBody.innerHTML += `
-                    <tr class="hover:bg-indigo-100/40 transition">
-                        <td class="p-2 text-indigo-900 font-bold">👤 ${namaKasir.toUpperCase()}</td>
-                        <td class="p-2 text-right text-slate-600">Rp ${ringkasanKasirMap[namaKasir].totalModal.toLocaleString('id-ID')}</td>
-                        <td class="p-2 text-right text-emerald-700 font-black">Rp ${ringkasanKasirMap[namaKasir].totalLaci.toLocaleString('id-ID')}</td>
-                    </tr>`;
+            for (let k in ringkasanKasirMap) {
+                summaryBody.innerHTML += `<tr><td class="p-2 font-bold">${k}</td><td class="p-2 text-right">Rp ${ringkasanKasirMap[k].m.toLocaleString()}</td><td class="p-2 text-right">Rp ${ringkasanKasirMap[k].l.toLocaleString()}</td></tr>`;
             }
-
-            summaryBody.innerHTML += `
-                <tr class="bg-indigo-900 text-white font-black border-t-2 border-slate-950 text-xs">
-                    <td class="p-2.5 text-left tracking-wider font-bold">GRAND TOTAL TOKO</td>
-                    <td class="p-2.5 text-right font-mono">Rp ${grandTotalModalSeluruhToko.toLocaleString('id-ID')}</td>
-                    <td class="p-2.5 text-right font-mono text-amber-300 font-black">Rp ${grandTotalLaciSeluruhToko.toLocaleString('id-ID')}</td>
-                </tr>`;
         }
 
-        function unduhLaporanHarianExcel() {
-            if(document.getElementById('table-shifts-body').innerText.includes('Tidak ada rekap')) {
-                return alert("Gagal mengekspor! Tidak ada data rekap shift pada tanggal ini.");
-            }
-            const tanggalTarget = document.getElementById('filter-shift-date').value.trim();
-            const tabelHTML = document.getElementById('table-summary-excel-target');
-            const lembarKerja = XLSX.utils.table_to_sheet(tabelHTML);
-            const fileWorkbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(fileWorkbook, lembarKerja, "Rekap Shift");
-            XLSX.writeFile(fileWorkbook, `Laporan_Rekap_Shift_${tanggalTarget}.xlsx`);
-        }
-
-        function unduhLaporanHarianPDF() {
-            if(document.getElementById('table-shifts-body').innerText.includes('Tidak ada rekap')) {
-                return alert("Gagal mencetak! Tidak ada data laporan rekap shift untuk dicetak pada tanggal ini.");
-            }
-            
-            const tanggalTarget = document.getElementById('filter-shift-date').value.trim();
-            const ringkasanTabelHtml = document.getElementById('print-summary-area-clone') ? document.getElementById('print-summary-area-clone').innerHTML : document.getElementById('table-summary-kasir-body').parentNode.outerHTML;
-
-            const elemenIsolasiCetak = document.createElement('div');
-            elemenIsolasiCetak.style.padding = '12mm';
-            elemenIsolasiCetak.style.fontFamily = 'monospace';
-            elemenIsolasiCetak.style.backgroundColor = '#ffffff';
-
-            elemenIsolasiCetak.innerHTML = `
-                <div style="text-align: center; margin-bottom: 8mm; border-bottom: 2px solid #000; padding-bottom: 4mm;">
-                    <h2 style="margin: 0; font-size: 16px; font-weight: bold; text-transform: uppercase;">REKAP OPERASIONAL HARIAN SHIFT KASIR</h2>
-                    <p style="margin: 2px 0 0 0; font-size: 11px; font-weight: bold; color: #555;">Periode Penjualan Audit: ${tanggalTarget}</p>
-                </div>
-                
-                <div style="margin-bottom: 12mm;">
-                    <div style="background-color: #000; color: #fff; padding: 4px 8px; font-size: 11px; font-weight: bold; margin-bottom: 3mm; text-transform: uppercase;">
-                        I. Laporan Ringkasan Setoran Akumulatif Toko
-                    </div>
-                    ${ringkasanTabelHtml}
-                </div>
-                
-                <div style="margin-top: 25mm; display: flex; justify-between; font-size: 11px; font-weight: bold;">
-                    <div style="text-align: center; width: 45mm;">
-                        Dilaporkan Oleh,<br><br><br><br>
-                        ( ........................ )<br>
-                        <span style="font-size: 9px; color: #666;">Staf Supervisor Kasir</span>
-                    </div>
-                    <div style="text-align: center; width: 45mm;">
-                        Disetujui Oleh,<br><br><br><br>
-                        ( ........................ )<br>
-                        <span style="font-size: 9px; color: #666;">Owner / Pemilik Toko</span>
-                    </div>
-                </div>
-
-                <div style="margin-top: 15mm; text-align: center; font-size: 9px; color: #777; border-top: 1px dashed #ccc; padding-top: 2mm;">
-                    Dokumen ini sah dirilis otomatis oleh Sistem POS Cloud Database.<br>
-                    Waktu Cetak: ${new Date().toLocaleString('id-ID')}
-                </div>`;
-
-            const opsiKonfigurasiPDF = {
-                margin:       [10, 10, 10, 10],
-                filename:     `Laporan_Harian_POS_${tanggalTarget}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2.5, useCORS: true, logging: false },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opsiKonfigurasiPDF).from(elemenIsolasiCetak).save().catch(err => {
-                window.print();
-            });
-        }
+        window.addEventListener('DOMContentLoaded', () => muatDataLaporanSistem(true));
     </script>
 </body>
 </html>
