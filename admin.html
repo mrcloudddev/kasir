@@ -31,15 +31,31 @@
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 media-no-print">
+            
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
                 <div>
-                    <h2 class="text-xs font-black text-indigo-700 uppercase tracking-widest mb-3 flex items-center gap-1">
-                        <span>➕</span> Daftarkan Master Produk Baru
-                    </h2>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 border-b border-slate-100 pb-2">
+                        <h2 class="text-xs font-black text-indigo-700 uppercase tracking-widest flex items-center gap-1">
+                            <span>➕</span> Daftarkan Master Produk Baru
+                        </h2>
+                        
+                        <div class="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-[10px] font-black tracking-wider uppercase">
+                            <button onclick="gantiMetodeInputBarang('SCAN')" id="btn-mode-scan" class="px-2.5 py-1 rounded-md transition duration-200 cursor-pointer bg-indigo-600 text-white shadow-2xs">
+                                📷 Scan QR/Barcode
+                            </button>
+                            <button onclick="gantiMetodeInputBarang('MANUAL')" id="btn-mode-manual" class="px-2.5 py-1 rounded-md transition duration-200 cursor-pointer text-slate-500 hover:text-slate-900">
+                                ⌨️ Manual
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-3 text-xs">
                         <div class="col-span-2">
-                            <label class="block text-slate-500 font-bold mb-1">Kode Barcode / EAN-13:</label>
-                            <input type="text" id="new-p-barcode" placeholder="Scan barcode atau ketik angka..." class="w-full border border-slate-200 p-2.5 rounded-lg font-mono bg-slate-50 focus:outline-none focus:border-indigo-500 text-sm">
+                            <label class="block text-slate-500 font-bold mb-1 flex justify-between">
+                                <span>Kode Barcode / EAN-13:</span>
+                                <span id="badge-input-status" class="text-[9px] font-mono text-indigo-600 bg-indigo-50 px-1.5 rounded animate-pulse">Mode Scanner Aktif (Auto-Focus)</span>
+                            </label>
+                            <input type="text" id="new-p-barcode" placeholder="Arahkan alat scan / ketik kode barang..." class="w-full border border-slate-200 p-2.5 rounded-lg font-mono bg-slate-50 focus:outline-none focus:border-indigo-500 text-sm font-bold transition">
                         </div>
                         <div class="col-span-2">
                             <label class="block text-slate-500 font-bold mb-1">Nama Lengkap Produk:</label>
@@ -231,6 +247,9 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbwyWjLnncrQMhpd-zT2xRZqPFhN_0b9hKWcTDyqch2vQexrsnuZULJkSbOWRTGER6mi/exec";
         let loopIntervalAktivitas;
         let globalDataShifts = [];
+        
+        // Penanda status metode input produk aktif secara default (SCAN)
+        let metodeInputAktif = "SCAN"; 
 
         function toggleLoading(show) {
             document.getElementById('loading-state').classList.toggle('hidden', !show);
@@ -255,6 +274,38 @@
                 const mm = String(hariIni.getMonth() + 1).padStart(2, '0');
                 const dd = String(hariIni.getDate()).padStart(2, '0');
                 inputTanggal.value = `${yyyy}-${mm}-${dd}`;
+            }
+        }
+
+        // BARU!! ENGINE PENGATUR METODE INPUT MASTER PRODUK
+        function gantiMetodeInputBarang(mode) {
+            metodeInputAktif = mode;
+            const btnScan = document.getElementById('btn-mode-scan');
+            const btnManual = document.getElementById('btn-mode-manual');
+            const badgeStatus = document.getElementById('badge-input-status');
+            const inputBarcode = document.getElementById('new-p-barcode');
+
+            if (mode === "SCAN") {
+                btnScan.className = "px-2.5 py-1 rounded-md transition duration-200 cursor-pointer bg-indigo-600 text-white shadow-2xs";
+                btnManual.className = "px-2.5 py-1 rounded-md transition duration-200 cursor-pointer text-slate-500 hover:text-slate-900";
+                badgeStatus.innerText = "Mode Scanner Aktif (Auto-Focus)";
+                badgeStatus.className = "text-[9px] font-mono text-indigo-600 bg-indigo-50 px-1.5 rounded animate-pulse";
+                inputBarcode.focus();
+            } else {
+                btnManual.className = "px-2.5 py-1 rounded-md transition duration-200 cursor-pointer bg-indigo-600 text-white shadow-2xs";
+                btnScan.className = "px-2.5 py-1 rounded-md transition duration-200 cursor-pointer text-slate-500 hover:text-slate-900";
+                badgeStatus.innerText = "Mode Ketik Manual";
+                badgeStatus.className = "text-[9px] font-mono text-amber-700 bg-amber-50 px-1.5 rounded font-bold";
+            }
+        }
+
+        // Fungsi pemaksa auto-focus mengunci input barcode saat dokumen di-click / selesai di scan
+        function jalankanLocksAutoFocusScanner() {
+            if (metodeInputAktif === "SCAN") {
+                const inputBarcode = document.getElementById('new-p-barcode');
+                if (document.activeElement !== inputBarcode && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') {
+                    inputBarcode.focus();
+                }
             }
         }
 
@@ -337,6 +388,8 @@
             } catch (error) { console.error(error); } finally {
                 if(pakeSpinner) toggleLoading(false);
                 setIndicatorStatus(false);
+                // Kembalikan focus ke barcode setelah reload data log
+                if (metodeInputAktif === "SCAN") document.getElementById('new-p-barcode').focus();
             }
         }
 
@@ -556,11 +609,26 @@
         window.addEventListener('DOMContentLoaded', () => {
             muatDataLaporanSistem(true);
             aktifkanLiveAutoSync(); 
+            
+            // Pasang pemicu listener auto-focus scanner secara global di seluruh halaman admin
+            document.body.addEventListener('click', jalankanLocksAutoFocusScanner);
         });
 
         document.addEventListener("visibilitychange", () => {
             if (!document.hidden) { muatDataLaporanSistem(false); }
         });
     </script>
+
+    <style>
+        .show-only-on-pdf { display: none; }
+        .html2pdf__page-break { page-break-before: always; }
+        @media print {
+            .media-no-print { display: none !important; }
+            body { background-color: #ffffff !important; padding: 0 !important; }
+            .show-only-on-pdf { display: block !important; }
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
 </body>
 </html>
