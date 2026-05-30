@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POS Terminal Kasir (Responsive Mode)</title>
+    <!-- Tailwind CSS v4 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         /* Sembunyikan scrollbar bawaan browser agar UI terlihat seperti aplikasi native */
@@ -13,7 +14,7 @@
         /* AREA MONITOR UTAMA (NON-PRINT) */
         #container-struk-nota-print { display: none; }
         
-        /* MODERN THERMAL CASIER INVOICE STYLING ENGINE */
+        /* MODERN THERMAL CASHIER INVOICE STYLING ENGINE */
         @media print {
             body * { display: none !important; }
             
@@ -38,7 +39,7 @@
                 margin: 0 auto !important;
                 padding: 0mm 0mm 4mm 0mm !important;
                 font-size: 9.5px !important;
-                line-height: 1.25 !important;
+                line-height: 1.3 !important;
                 box-sizing: border-box !important;
             }
 
@@ -77,12 +78,14 @@
 </head>
 <body class="bg-slate-100 font-sans h-screen flex flex-col overflow-hidden text-slate-900 selection:bg-emerald-500 selection:text-white">
 
+    <!-- Header Panel Kasir -->
     <header class="bg-slate-900 text-white p-3 sm:p-4 shadow-md flex flex-col md:flex-row justify-between items-center gap-3 shrink-0">
         <div class="flex items-center gap-2">
             <span class="text-xl">🛒</span>
             <h1 class="text-base sm:text-lg font-black tracking-wider uppercase text-emerald-400">POS TERMINAL KASIR OPERASIONAL</h1>
         </div>
         
+        <!-- Kontrol Status Operator & Shift -->
         <div class="flex flex-wrap items-center justify-center md:justify-end gap-2 w-full md:w-auto text-xs">
             <div class="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center gap-2 font-mono">
                 <span class="text-slate-400">KASIR:</span>
@@ -99,8 +102,10 @@
         </div>
     </header>
 
+    <!-- Main Workspace Container -->
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-3 sm:p-4 overflow-y-auto lg:overflow-hidden min-h-0">
         
+        <!-- AREA LEFT (KATALOG PRODUK) -->
         <div class="lg:col-span-7 bg-white p-4 rounded-xl shadow-xs border border-slate-200 flex flex-col min-h-[400px] lg:min-h-0 overflow-hidden">
             <div class="flex gap-2 mb-4 shrink-0">
                 <div class="relative flex-1">
@@ -116,6 +121,7 @@
             </div>
         </div>
 
+        <!-- AREA RIGHT (KERANJANG & PEMBAYARAN) -->
         <div class="lg:col-span-5 bg-white p-4 rounded-xl shadow-xs border border-slate-200 flex flex-col min-h-[350px] lg:min-h-0 overflow-hidden">
             <div class="flex justify-between items-center mb-2 pb-2 border-b border-slate-100 shrink-0">
                 <h2 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-1">
@@ -161,42 +167,47 @@
         </div>
     </div>
 
+    <!-- AREA STRUK NOTA TERSEMBUNYI (PRESTIGE REKAP INDONESIA FORMAT) -->
     <div id="container-struk-nota-print">
-        <div style="text-align: center; font-size: 16px; margin-bottom: 0.5mm;">☕</div>
-        <div style="text-align: center; font-weight: bold; font-size: 12px; tracking-wide; uppercase; margin-bottom: 0.5mm;">KAFE TOKO POS KASIR</div>
-        <div style="text-align: center; font-size: 8.5px; color: #333;">
+        <!-- IKON DIHAPUS, BERFOKUS PADA TEKS JUDUL UTAMA -->
+        <div style="text-align: center; font-weight: bold; font-size: 11.5px; tracking-wide; uppercase; margin-bottom: 0.5mm;">KAFE TOKO POS KASIR</div>
+        <div style="text-align: center; font-size: 8.5px; color: #111;">
             Jl. Raya Operasional Terpusat, Indonesia<br>
             Telp: 0812-3456-7890
         </div>
         
         <div class="struk-divider"></div>
         
-        <div style="font-size: 8.5px; space-y: 0.5mm;">
-            <div class="flex-print-row"><span>No. Nota: <span id="print-invoice-id">INV-XXXX</span></span></div>
-            <div class="flex-print-row"><span>Waktu   : <span id="print-timestamp-id">2026-00-00</span></span></div>
-            <div class="flex-print-row"><span>Kasir   : <span id="print-cashier-id">Kasir</span></span><span>Shift: <span id="print-shift-id">SF</span></span></div>
+        <div style="font-size: 8.5px; line-height: 1.35;">
+            <div class="flex-print-row"><span>No. Nota : <span id="print-invoice-id">INV-XXXX</span></span></div>
+            <div class="flex-print-row"><span>Waktu    : <span id="print-timestamp-id">2026-00-00</span></span></div>
+            <div class="flex-print-row"><span>Kasir    : <span id="print-cashier-id">Kasir</span></span><span>Shift: <span id="print-shift-id">SF</span></span></div>
         </div>
         
         <div class="struk-divider"></div>
         
+        <!-- Rincian Daftar Belanjaan (Clean Grid Align) -->
         <div style="font-size: 8.5px;" id="print-items-list-area"></div>
         
         <div class="struk-divider"></div>
         
-        <div style="font-size: 9px; space-y: 0.8mm;">
-            <div class="flex-print-row"><span>TOTAL JUAL</span><span id="print-total-id">Rp 0</span></div>
-            <div class="flex-print-row"><span>METODE BAYAR</span><span id="print-method-id">-</span></div>
-            <div class="flex-print-row"><span>BAYAR/CASH</span><span id="print-pay-id">Rp 0</span></div>
+        <!-- Bagian Finansial Akuntansi Penjualan Baku Bahasa Indonesia -->
+        <div style="font-size: 9px; line-height: 1.4;">
+            <div class="flex-print-row"><span>TOTAL BELANJA</span><span id="print-total-id">Rp 0</span></div>
+            <div class="flex-print-row"><span>METODE PEMBAYARAN</span><span id="print-method-id">-</span></div>
+            <div class="flex-print-row"><span>TUNAI / BAYAR</span><span id="print-pay-id">Rp 0</span></div>
             <div class="struk-divider" style="border-top-style: dotted !important;"></div>
             <div class="flex-print-row-bold"><span>KEMBALIAN</span><span id="print-change-id">Rp 0</span></div>
         </div>
         
-        <div style="text-align: center; font-size: 8.5px; margin-top: 5mm; border-top: 1px dashed #000; padding-top: 2mm; font-style: italic;">
-            Thank you for stopping by!<br>
+        <!-- TEKS PENUTUP RESMI BAHASA INDONESIA BAKU -->
+        <div style="text-align: center; font-size: 8.5px; margin-top: 5mm; border-top: 1px dashed #000; padding-top: 2mm; font-weight: bold;">
+            Terima kasih atas kunjungan Anda<br>
             *** LUNAS ***
         </div>
     </div>
 
+    <!-- JAVASCRIPT POS ENGINE INTEGRATION -->
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbwxNfBeB3DKoLBtklAfJfdiedVbsyq5K4Amv1ElklNfDJV7ZiX9VkJkZTA_2xF-XTcM/exec";
         let masterProduk = [];
@@ -352,7 +363,7 @@
                     // --- KOMPILASI DATA VISUAL NOTA KASIR ---
                     document.getElementById('print-invoice-id').innerText = res.invoice;
                     
-                    // Format waktu indonesia Barat (WIB) tanpa pecahan detik berantakan
+                    // Format waktu Indonesia baku (Tanggal/Bulan/Tahun Jam:Menit)
                     const skrg = new Date();
                     const formatWaktu = skrg.getDate().toString().padStart(2, '0') + '/' + 
                                         (skrg.getMonth()+1).toString().padStart(2, '0') + '/' + 
@@ -370,7 +381,7 @@
                     let hitungSisa = bayar - total;
                     document.getElementById('print-change-id').innerText = metode === "TUNAI" ? `Rp ${hitungSisa.toLocaleString('id-ID')}` : "Rp 0";
 
-                    // Ambil area rincian item belanjaan
+                    // Inject rincian item belanjaan ke area cetak nota dengan format Rp rapi
                     let listArea = document.getElementById('print-items-list-area');
                     listArea.innerHTML = '';
                     keranjangBelanja.forEach(item => {
@@ -379,8 +390,8 @@
                             <div style="margin-bottom: 1.5mm;">
                                 <div style="font-weight: bold; color: #000;">${item.product_name}</div>
                                 <div class="flex-print-row">
-                                    <span>  ${item.quantity} x ${parseInt(item.selling_price).toLocaleString('id-ID')}</span>
-                                    <span>${sub.toLocaleString('id-ID')}</span>
+                                    <span>  ${item.quantity} x Rp ${parseInt(item.selling_price).toLocaleString('id-ID')}</span>
+                                    <span>Rp ${sub.toLocaleString('id-ID')}</span>
                                 </div>
                             </div>`;
                     });
@@ -388,7 +399,7 @@
                     // Pemicu Printer Struk Thermal Kasir Otomatis
                     window.print();
 
-                    // Kembalikan form kasir ke status bersih awal
+                    // Bersihkan workspace
                     kosongkanKeranjangTotal();
                     document.getElementById('pos-cash-received').value = 0;
                     muatKatalogProdukDariDatabase();
