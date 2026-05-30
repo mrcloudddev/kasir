@@ -151,7 +151,7 @@
             </div>
 
             <div class="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96 overflow-hidden" id="area-pdf-laporan">
-                <div class="flex flex-col mb-3 border-b border-slate-100 pb-2 gap-2.5">
+                <div class="flex flex-col mb-2 border-b border-slate-100 pb-2 gap-2">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 media-no-print">
                         <h2 class="text-xs font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">
                             <span>📋</span> Laporan Harian Rekap Shift Kerja Kasir
@@ -172,32 +172,50 @@
                         <span>📅 Periode: <span id="label-date-view" class="text-indigo-700"></span></span>
                         <span class="text-slate-400">Terdeteksi: <span id="label-count-view" class="text-slate-700">0</span> Baris</span>
                     </div>
-
-                    <div id="rekap-per-kasir-area" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-mono">
-                        </div>
                 </div>
                 
-                <div class="overflow-auto flex-1 border border-slate-100 rounded-lg max-w-full">
+                <div class="overflow-y-auto flex-1 space-y-4 pr-1">
                     <div class="hidden show-only-on-pdf mb-4 text-center border-b-2 border-slate-950 pb-2">
                         <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider">REKAP OPERASIONAL HARIAN LAPORAN SHIFT KASIR</h3>
                         <p class="text-[10px] font-mono text-slate-500 font-bold">Tanggal Audit: <span id="pdf-date-title"></span></p>
                     </div>
 
-                    <table class="w-full text-left border-collapse min-w-[500px] sm:min-w-full">
-                        <thead>
-                            <tr class="bg-slate-900 text-white font-bold sticky top-0 text-[11px]">
-                                <th class="p-2.5">ID Shift</th>
-                                <th class="p-2.5">Staf Kasir</th>
-                                <th class="p-2.5 text-right">Modal</th>
-                                <th class="p-2.5 text-right">Uang Laci</th>
-                                <th class="p-2.5 text-center">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-shifts-body" class="divide-y divide-slate-200 text-slate-600 font-mono text-[10px]">
-                            <tr><td colspan="5" class="text-center py-8 text-slate-400 italic bg-white">Memuat database rekap laporan...</td></tr>
-                        </tbody>
-                    </table>
+                    <div class="border border-indigo-100 rounded-lg overflow-hidden shrink-0">
+                        <div class="bg-indigo-900 text-white px-3 py-1.5 text-[10px] font-black tracking-wider uppercase">
+                            📊 RINGKASAN SETORAN AKUMULATIF PER NAMA KASIR
+                        </div>
+                        <table class="w-full text-left border-collapse font-mono text-[10px] bg-indigo-50/50">
+                            <thead>
+                                <tr class="bg-indigo-100 text-indigo-900 font-bold border-b border-indigo-200">
+                                    <th class="p-2">Nama Staff Kasir</th>
+                                    <th class="p-2 text-right">Total Uang Modal</th>
+                                    <th class="p-2 text-right text-emerald-800">Total Uang Laci</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-summary-kasir-body" class="divide-y divide-indigo-100 font-bold text-indigo-950">
+                                <tr><td colspan="3" class="text-center py-3 text-slate-400 italic font-sans font-normal">Belum ada data shift kasir...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="border border-slate-100 rounded-lg overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[480px]">
+                            <thead>
+                                <tr class="bg-slate-900 text-white font-bold sticky top-0 text-[11px]">
+                                    <th class="p-2.5">ID Shift</th>
+                                    <th class="p-2.5">Staf Kasir</th>
+                                    <th class="p-2.5 text-right">Modal</th>
+                                    <th class="p-2.5 text-right">Uang Laci</th>
+                                    <th class="p-2.5 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-shifts-body" class="divide-y divide-slate-200 text-slate-600 font-mono text-[10px]">
+                                <tr><td colspan="5" class="text-center py-8 text-slate-400 italic bg-white">Memuat database rekap laporan...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+
             </div>
         </div>
 
@@ -254,7 +272,7 @@
                         
                         let stokBadgeClass = "bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-0.5 rounded";
                         if (parseInt(p.stock) === 0) {
-                            stokBadgeClass = "bg-rose-100 text-rose-700 border border-rose-300 font-black px-2 py-0.5 rounded animate-bounce";
+                            stokBadgeClass = "bg-rose-100 text-rose-700 border border-rose-300 font-black px-2 py-0.5 rounded";
                         } else if (parseInt(p.stock) <= 10) {
                             stokBadgeClass = "bg-amber-50 text-amber-700 border border-amber-200 font-bold px-2 py-0.5 rounded";
                         }
@@ -316,12 +334,13 @@
             }
         }
 
+        // PERBAIKAN LOGIKA UTAMA: Menggunakan metode includes() agar pencarian tanggal kebal distorsi format regional database
         function renderTabelRekapShift() {
             const shiftsBody = document.getElementById('table-shifts-body');
-            const rekapKasirArea = document.getElementById('rekap-per-kasir-area');
+            const summaryBody = document.getElementById('table-summary-kasir-body');
             
             shiftsBody.innerHTML = '';
-            rekapKasirArea.innerHTML = '';
+            summaryBody.innerHTML = '';
             
             const tanggalTarget = document.getElementById('filter-shift-date').value.trim(); 
             document.getElementById('pdf-date-title').innerText = tanggalTarget;
@@ -329,6 +348,7 @@
             
             if (!tanggalTarget) {
                 shiftsBody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400 italic bg-white">Pilih tanggal terlebih dahulu...</td></tr>`;
+                summaryBody.innerHTML = `<tr><td colspan="3" class="text-center py-3 text-slate-400 italic bg-white">Pilih tanggal terlebih dahulu...</td></tr>`;
                 document.getElementById('label-count-view').innerText = "0";
                 return;
             }
@@ -344,10 +364,11 @@
             
             if (dataTerfilter.length === 0) {
                 shiftsBody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400 italic bg-white">Tidak ada rekap aktivitas shift kasir pada tanggal ${tanggalTarget}.</td></tr>`;
+                summaryBody.innerHTML = `<tr><td colspan="3" class="text-center py-3 text-slate-400 italic bg-white">Tidak ada setoran kasir...</td></tr>`;
                 return;
             }
             
-            // LOGIKA BARU: Membuat akumulasi otomatis rangkuman uang per nama kasir
+            // Map pencatat akumulasi ringkasan per kasir
             let ringkasanKasirMap = {};
 
             dataTerfilter.reverse().forEach(s => {
@@ -356,7 +377,7 @@
                 let modalAwal = parseInt(s.starting_cash || 0, 10);
                 let uangLaciAktual = parseInt(s.actual_cash || 0, 10);
 
-                // Hitung kumulatif per kasir untuk widget ringkasan atas
+                // Hitung kumulatif setoran kasir
                 if (!ringkasanKasirMap[s.cashier_name]) {
                     ringkasanKasirMap[s.cashier_name] = { totalModal: 0, totalLaci: 0 };
                 }
@@ -375,14 +396,14 @@
                     </tr>`;
             });
 
-            // Suntikkan data rangkuman per kasir ke area widget kontainer atas
+            // Loop untuk meng-inject data baris ke tabel ringkasan per nama kasir
             for (let namaKasir in ringkasanKasirMap) {
-                rekapKasirArea.innerHTML += `
-                    <div class="bg-indigo-50 border border-indigo-100 text-indigo-950 p-2 rounded-lg flex flex-col justify-between">
-                        <div class="font-bold border-b border-indigo-200 pb-0.5 mb-1 text-indigo-800">👤 ${namaKasir.toUpperCase()}</div>
-                        <div class="flex justify-between"><span>Tot. Modal:</span><span class="font-bold">Rp ${ringkasanKasirMap[namaKasir].totalModal.toLocaleString('id-ID')}</span></div>
-                        <div class="flex justify-between text-emerald-700"><span>Tot. Setoran:</span><span class="font-black">Rp ${ringkasanKasirMap[namaKasir].totalLaci.toLocaleString('id-ID')}</span></div>
-                    </div>`;
+                summaryBody.innerHTML += `
+                    <tr class="hover:bg-indigo-100/40 transition">
+                        <td class="p-2 text-indigo-900 font-bold">👤 ${namaKasir.toUpperCase()}</td>
+                        <td class="p-2 text-right text-slate-600">Rp ${ringkasanKasirMap[namaKasir].totalModal.toLocaleString('id-ID')}</td>
+                        <td class="p-2 text-right text-emerald-700 font-black">Rp ${ringkasanKasirMap[namaKasir].totalLaci.toLocaleString('id-ID')}</td>
+                    </tr>`;
             }
         }
 
@@ -394,8 +415,8 @@
             const tanggalTarget = document.getElementById('filter-shift-date').value.trim();
             const elementTarget = document.getElementById('area-pdf-laporan');
             
-            const scrollContainer = elementTarget.querySelector('.overflow-auto');
-            if(scrollContainer) scrollContainer.classList.remove('overflow-auto');
+            const scrollContainer = elementTarget.querySelector('.overflow-y-auto');
+            if(scrollContainer) scrollContainer.classList.remove('overflow-y-auto');
 
             const opsiKonfigurasiPDF = {
                 margin:       [12, 12, 12, 12],
@@ -406,7 +427,7 @@
             };
 
             html2pdf().set(opsiKonfigurasiPDF).from(elementTarget).toContainer().toCanvas().toImg().toPdf().save().then(() => {
-                if(scrollContainer) scrollContainer.classList.add('overflow-auto');
+                if(scrollContainer) scrollContainer.classList.add('overflow-y-auto');
             });
         }
 
