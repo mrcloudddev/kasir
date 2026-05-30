@@ -6,6 +6,7 @@
     <title>Admin Control Center (Dashboard Mode)</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body class="bg-slate-50 font-sans min-h-screen text-slate-900 selection:bg-indigo-500 selection:text-white">
 
@@ -157,14 +158,19 @@
                             <span>📋</span> Laporan Harian Rekap Shift Kerja Kasir
                         </h2>
                         
-                        <div class="flex flex-row items-center gap-2 text-[11px] w-full sm:w-auto justify-between sm:justify-end">
+                        <div class="flex flex-wrap items-center gap-2 text-[11px] w-full sm:w-auto justify-between sm:justify-end">
                             <div class="flex items-center gap-1">
                                 <span class="text-slate-400 font-bold">Tanggal:</span>
                                 <input type="date" id="filter-shift-date" onchange="renderTabelRekapShift()" class="border border-slate-300 rounded p-1 bg-white focus:outline-none focus:border-indigo-500 font-mono font-bold text-xs">
                             </div>
-                            <button onclick="unduhLaporanHarianPDF()" class="bg-rose-600 hover:bg-rose-700 text-white font-black px-2.5 py-1.5 rounded-md flex items-center gap-1 cursor-pointer transition shadow-2xs active:scale-95">
-                                📥 Unduh PDF
-                            </button>
+                            <div class="flex gap-1.5">
+                                <button onclick="unduhLaporanHarianExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-2.5 py-1.5 rounded-md flex items-center gap-1 cursor-pointer transition shadow-2xs active:scale-95">
+                                    🟢 Excel
+                                </button>
+                                <button onclick="unduhLaporanHarianPDF()" class="bg-rose-600 hover:bg-rose-700 text-white font-black px-2.5 py-1.5 rounded-md flex items-center gap-1 cursor-pointer transition shadow-2xs active:scale-95">
+                                    📥 PDF
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
@@ -184,7 +190,7 @@
                         <div class="bg-indigo-900 text-white px-3 py-1.5 text-[10px] font-black tracking-wider uppercase">
                             📊 RINGKASAN SETORAN AKUMULATIF PER NAMA KASIR
                         </div>
-                        <table class="w-full text-left border-collapse font-mono text-[10px] bg-indigo-50/50">
+                        <table id="table-summary-excel-target" class="w-full text-left border-collapse font-mono text-[10px] bg-indigo-50/50">
                             <thead>
                                 <tr class="bg-indigo-100 text-indigo-900 font-bold border-b border-indigo-200">
                                     <th class="p-2">Nama Staff Kasir</th>
@@ -407,13 +413,31 @@
                     </tr>`;
             }
 
-            // PERBAIKAN: Menghilangkan ikon piala (🏆) agar tampilan dokumen terlihat formal, bersih, dan berstandar ritel profesional
             summaryBody.innerHTML += `
                 <tr class="bg-indigo-900 text-white font-black border-t-2 border-slate-950">
                     <td class="p-2.5 text-left tracking-wider font-bold">GRAND TOTAL TOKO</td>
                     <td class="p-2.5 text-right font-mono">Rp ${grandTotalModalSeluruhToko.toLocaleString('id-ID')}</td>
                     <td class="p-2.5 text-right font-mono text-amber-300 font-black">Rp ${grandTotalLaciSeluruhToko.toLocaleString('id-ID')}</td>
                 </tr>`;
+        }
+
+        // BARU!! FUNGSI UNTUK GENERATE & UNDUH FILE EXCEL REKAP SHIFT (.XLSX)
+        function unduhLaporanHarianExcel() {
+            if(document.getElementById('table-shifts-body').innerText.includes('Tidak ada rekap')) {
+                return alert("Gagal mengekspor! Tidak ada data rekap shift pada tanggal ini.");
+            }
+            
+            const tanggalTarget = document.getElementById('filter-shift-date').value.trim();
+            const tabelHTML = document.getElementById('table-summary-excel-target');
+            
+            // Konversi elemen tabel HTML menjadi objek lembar kerja Workbook SheetJS
+            const lembarKerja = XLSX.utils.table_to_sheet(tabelHTML);
+            const fileWorkbook = XLSX.utils.book_new();
+            
+            XLSX.utils.book_append_sheet(fileWorkbook, lembarKerja, "Rekap Shift");
+            
+            // Tembak proses download instan format file Excel .xlsx ke komputer / HP
+            XLSX.writeFile(fileWorkbook, `Laporan_Rekap_Shift_${tanggalTarget}.xlsx`);
         }
 
         function unduhLaporanHarianPDF() {
