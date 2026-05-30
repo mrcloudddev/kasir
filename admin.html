@@ -151,7 +151,7 @@
                 </div>
             </div>
 
-            <div class="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96 overflow-hidden" id="area-pdf-laporan">
+            <div class="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col min-h-[24rem] h-auto overflow-hidden" id="area-pdf-laporan">
                 <div class="flex flex-col mb-3 border-b border-slate-100 pb-2.5 gap-2">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 media-no-print">
                         <h2 class="text-xs font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">
@@ -180,13 +180,13 @@
                     </div>
                 </div>
                 
-                <div id="rekap-scroll-wrapper" class="flex-1 flex flex-col gap-3 overflow-y-auto no-scrollbar pr-1">
+                <div class="flex flex-col gap-4 w-full">
                     <div class="hidden show-only-on-pdf mb-4 text-center border-b-2 border-slate-950 pb-2">
                         <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider">REKAP OPERASIONAL HARIAN LAPORAN SHIFT KASIR</h3>
                         <p class="text-[10px] font-mono text-slate-500 font-bold">Tanggal Audit: <span id="pdf-date-title"></span></p>
                     </div>
 
-                    <div class="border border-indigo-100 rounded-xl overflow-hidden shrink-0 shadow-2xs">
+                    <div class="border border-indigo-100 rounded-xl overflow-hidden shadow-2xs">
                         <div class="bg-indigo-900 text-white px-3 py-1.5 text-[10px] font-black tracking-wider uppercase">
                             📊 RINGKASAN SETORAN AKUMULATIF PER NAMA KASIR
                         </div>
@@ -378,7 +378,6 @@
             let grandTotalLaciSeluruhToko = 0;
 
             dataTerfilter.reverse().forEach(s => {
-                // FIX BADGE: Mendesain visual status kasir open/closed agar super elegan
                 let statusStyle = s.status === "open" ? "bg-blue-100 text-blue-800 border border-blue-200 animate-pulse font-bold" : "bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold";
                 
                 let modalAwal = parseInt(s.starting_cash || 0, 10);
@@ -563,18 +562,5 @@
             if (!document.hidden) { muatDataLaporanSistem(false); }
         });
     </script>
-
-    <style>
-        .show-only-on-pdf { display: none; }
-        .html2pdf__page-break { page-break-before: always; }
-        @media print {
-            .media-no-print { display: none !important; }
-            body { background-color: #ffffff !important; padding: 0 !important; }
-            .show-only-on-pdf { display: block !important; }
-        }
-        /* Mengamankan scrollbar mikro bawaan Tailwind agar UI tetap mulus */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    </style>
 </body>
 </html>
