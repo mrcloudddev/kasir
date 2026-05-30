@@ -4,14 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Control Center (Dashboard Mode)</title>
-    <!-- Tailwind CSS v4 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Pustaka html2pdf.js Eksternal untuk Generate PDF Sisi Klien -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body class="bg-slate-50 font-sans min-h-screen text-slate-900 selection:bg-indigo-500 selection:text-white">
 
-    <!-- Header Panel Admin -->
     <header class="bg-indigo-900 text-white p-4 shadow-md flex flex-col sm:flex-row justify-between items-center gap-3 media-no-print">
         <div class="flex items-center gap-3">
             <h1 class="text-lg sm:text-xl font-bold tracking-wide text-center sm:text-left">👑 SYSTEM CONTROL PANEL (ADMIN ONLY)</h1>
@@ -26,17 +23,13 @@
         </div>
     </header>
 
-    <!-- Main Container -->
     <div class="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
         
-        <!-- Status Loading Global -->
         <div id="loading-state" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl font-semibold shadow-xs media-no-print">
             Sedang berkomunikasi dengan database terpusat...
         </div>
         
-        <!-- ROW 1: MASTER INPUT BARANG DAN OPNAME STOK -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 media-no-print">
-            <!-- FORM A: INPUT MASTER PRODUK BARU -->
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
                 <div>
                     <h2 class="text-xs font-black text-indigo-700 uppercase tracking-widest mb-3 flex items-center gap-1">
@@ -70,7 +63,6 @@
                 </button>
             </div>
 
-            <!-- FORM B: KOREKSI STOK DUAL MODE -->
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
                 <div>
                     <h2 class="text-xs font-black text-amber-700 uppercase tracking-widest mb-3 flex items-center gap-1">
@@ -100,9 +92,7 @@
             </div>
         </div>
 
-        <!-- ROW 2: LIVE OMZET & LOG AUDIT AKTIVITAS -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 media-no-print">
-            <!-- HISTORI OMZET PENJUALAN -->
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-72">
                 <h2 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <span class="text-emerald-600">📈</span> Histori Penjualan POS (Live)
@@ -121,7 +111,6 @@
                 </div>
             </div>
 
-            <!-- AUDIT ACTIVITY LOGS -->
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-72">
                 <h2 class="text-xs font-black text-rose-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <span class="text-rose-600">🔒</span> Observability Activity Logs (Live)
@@ -142,9 +131,7 @@
             </div>
         </div>
 
-        <!-- ROW 3: REAL-TIME STOK & AREA REKAP SHIFT -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- MONITOR MASTER STOK -->
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96 media-no-print">
                 <h2 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <span>📦</span> Live Real-Time Master Stok Gudang
@@ -163,7 +150,6 @@
                 </div>
             </div>
 
-            <!-- TABEL LAPORAN REKAP SHIFT (RESPONSIF SMART CONTAINER) -->
             <div class="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96 overflow-hidden" id="area-pdf-laporan">
                 <div class="flex flex-col mb-3 border-b border-slate-100 pb-2 gap-2.5">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 media-no-print">
@@ -182,16 +168,16 @@
                         </div>
                     </div>
                     
-                    <!-- AREA KETERANGAN TANGGAL ATAS TABEL -->
                     <div class="text-[10px] sm:text-[11px] bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1.5 rounded-lg font-mono font-bold flex justify-between items-center">
                         <span>📅 Periode: <span id="label-date-view" class="text-indigo-700"></span></span>
                         <span class="text-slate-400">Terdeteksi: <span id="label-count-view" class="text-slate-700">0</span> Baris</span>
                     </div>
+
+                    <div id="rekap-per-kasir-area" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-mono">
+                        </div>
                 </div>
                 
-                <!-- BUNGKUS RESPONSIVE TABLE DENGAN OVERFLOW-X AUTO AGAR HP BISA SWIPE HORIZONTAL -->
                 <div class="overflow-auto flex-1 border border-slate-100 rounded-lg max-w-full">
-                    <!-- Teks Khusus untuk Lembaran Dokumen Hasil PDF -->
                     <div class="hidden show-only-on-pdf mb-4 text-center border-b-2 border-slate-950 pb-2">
                         <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider">REKAP OPERASIONAL HARIAN LAPORAN SHIFT KASIR</h3>
                         <p class="text-[10px] font-mono text-slate-500 font-bold">Tanggal Audit: <span id="pdf-date-title"></span></p>
@@ -217,9 +203,8 @@
 
     </div>
 
-    <!-- JAVASCRIPT ENGINE -->
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzMD1ZyErj-m4cKTXd9OwD344m54f08bQaJ2YlZFWNJYH3TjhxcgZ_Xs3-p1yj0n4YP/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwyWjLnncrQMhpd-zT2xRZqPFhN_0b9hKWcTDyqch2vQexrsnuZULJkSbOWRTGER6mi/exec";
         let loopIntervalAktivitas;
         let globalDataShifts = [];
 
@@ -331,10 +316,12 @@
             }
         }
 
-        // PERBAIKAN LOGIKA UTAMA: Menggunakan metode includes() agar pencarian tanggal kebal distorsi format regional database
         function renderTabelRekapShift() {
             const shiftsBody = document.getElementById('table-shifts-body');
+            const rekapKasirArea = document.getElementById('rekap-per-kasir-area');
+            
             shiftsBody.innerHTML = '';
+            rekapKasirArea.innerHTML = '';
             
             const tanggalTarget = document.getElementById('filter-shift-date').value.trim(); 
             document.getElementById('pdf-date-title').innerText = tanggalTarget;
@@ -349,9 +336,7 @@
             const dataTerfilter = globalDataShifts.filter(s => {
                 let waktuAsli = s.tanggal || s.start_time || s.waktu_buka;
                 if (!waktuAsli) return false;
-                
                 let strWaktu = waktuAsli.toString().trim();
-                // Mengubah pencarian kaku substring menjadi pencarian inklusif string
                 return strWaktu.includes(tanggalTarget);
             });
             
@@ -362,11 +347,21 @@
                 return;
             }
             
+            // LOGIKA BARU: Membuat akumulasi otomatis rangkuman uang per nama kasir
+            let ringkasanKasirMap = {};
+
             dataTerfilter.reverse().forEach(s => {
                 let statusStyle = s.status === "open" ? "bg-blue-50 text-blue-700 border border-blue-200 animate-pulse font-bold" : "bg-slate-100 text-slate-600 border border-slate-300 font-bold";
                 
                 let modalAwal = parseInt(s.starting_cash || 0, 10);
                 let uangLaciAktual = parseInt(s.actual_cash || 0, 10);
+
+                // Hitung kumulatif per kasir untuk widget ringkasan atas
+                if (!ringkasanKasirMap[s.cashier_name]) {
+                    ringkasanKasirMap[s.cashier_name] = { totalModal: 0, totalLaci: 0 };
+                }
+                ringkasanKasirMap[s.cashier_name].totalModal += modalAwal;
+                ringkasanKasirMap[s.cashier_name].totalLaci += uangLaciAktual;
 
                 shiftsBody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100 text-slate-700 font-medium">
@@ -379,6 +374,16 @@
                         <td class="p-2.5 text-center"><span class="px-1.5 py-0.5 rounded text-[9px] uppercase ${statusStyle}">${s.status}</span></td>
                     </tr>`;
             });
+
+            // Suntikkan data rangkuman per kasir ke area widget kontainer atas
+            for (let namaKasir in ringkasanKasirMap) {
+                rekapKasirArea.innerHTML += `
+                    <div class="bg-indigo-50 border border-indigo-100 text-indigo-950 p-2 rounded-lg flex flex-col justify-between">
+                        <div class="font-bold border-b border-indigo-200 pb-0.5 mb-1 text-indigo-800">👤 ${namaKasir.toUpperCase()}</div>
+                        <div class="flex justify-between"><span>Tot. Modal:</span><span class="font-bold">Rp ${ringkasanKasirMap[namaKasir].totalModal.toLocaleString('id-ID')}</span></div>
+                        <div class="flex justify-between text-emerald-700"><span>Tot. Setoran:</span><span class="font-black">Rp ${ringkasanKasirMap[namaKasir].totalLaci.toLocaleString('id-ID')}</span></div>
+                    </div>`;
+            }
         }
 
         function unduhLaporanHarianPDF() {
@@ -478,12 +483,9 @@
         });
     </script>
 
-    <!-- AREA STYLING RESPONSIVE MEDIA UTK SCREEN VS PRINT GENERATOR -->
     <style>
         .show-only-on-pdf { display: none; }
-        
         .html2pdf__page-break { page-break-before: always; }
-        
         @media print {
             .media-no-print { display: none !important; }
             body { background-color: #ffffff !important; padding: 0 !important; }
