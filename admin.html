@@ -334,6 +334,7 @@
             }
         }
 
+        // REVOLUSI LOGIKA PERHITUNGAN: Menambahkan Kalkulasi Baris Grand Total Toko Di Sisi Paling Bawah
         function renderTabelRekapShift() {
             const shiftsBody = document.getElementById('table-shifts-body');
             const summaryBody = document.getElementById('table-summary-kasir-body');
@@ -368,6 +369,10 @@
             }
             
             let ringkasanKasirMap = {};
+            
+            // Variabel akumulator untuk menampung total kumulatif seluruh toko hari ini
+            let grandTotalModalSeluruhToko = 0;
+            let grandTotalLaciSeluruhToko = 0;
 
             dataTerfilter.reverse().forEach(s => {
                 let statusStyle = s.status === "open" ? "bg-blue-50 text-blue-700 border border-blue-200 animate-pulse font-bold" : "bg-slate-100 text-slate-600 border border-slate-300 font-bold";
@@ -381,6 +386,10 @@
                 ringkasanKasirMap[s.cashier_name].totalModal += modalAwal;
                 ringkasanKasirMap[s.cashier_name].totalLaci += uangLaciAktual;
 
+                // Hitung penjumlahan kumulatif untuk baris Grand Total penutup
+                grandTotalModalSeluruhToko += modalAwal;
+                grandTotalLaciSeluruhToko += uangLaciAktual;
+
                 shiftsBody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100 text-slate-700 font-medium">
                         <td class="p-2.5 font-bold text-indigo-950">${s.shift_id}</td>
@@ -393,6 +402,7 @@
                     </tr>`;
             });
 
+            // Suntikkan baris individual per staf kasir
             for (let namaKasir in ringkasanKasirMap) {
                 summaryBody.innerHTML += `
                     <tr class="hover:bg-indigo-100/40 transition">
@@ -401,9 +411,16 @@
                         <td class="p-2 text-right text-emerald-700 font-black">Rp ${ringkasanKasirMap[namaKasir].totalLaci.toLocaleString('id-ID')}</td>
                     </tr>`;
             }
+
+            // BARU: Suntikkan Baris Penutup "GRAND TOTAL" di bagian paling bawah tabel ringkasan
+            summaryBody.innerHTML += `
+                <tr class="bg-indigo-900 text-white font-black border-t-2 border-slate-950">
+                    <td class="p-2.5 text-left tracking-wider font-bold">🏆 GRAND TOTAL TOKO</td>
+                    <td class="p-2.5 text-right font-mono">Rp ${grandTotalModalSeluruhToko.toLocaleString('id-ID')}</td>
+                    <td class="p-2.5 text-right font-mono text-amber-300 font-black">Rp ${grandTotalLaciSeluruhToko.toLocaleString('id-ID')}</td>
+                </tr>`;
         }
 
-        // PERBAIKAN REVOLUSIONER & MUTLAK: Menggunakan metode kloning memori terisolasi agar 100% lolos sensor cetak browser
         function unduhLaporanHarianPDF() {
             if(document.getElementById('table-shifts-body').innerText.includes('Tidak ada rekap')) {
                 return alert("Gagal mencetak! Tidak ada data laporan rekap shift untuk dicetak pada tanggal ini.");
@@ -411,11 +428,9 @@
             
             const tanggalTarget = document.getElementById('filter-shift-date').value.trim();
             
-            // Ambil data tabel mentah dari antarmuka DOM saat ini
             const ringkasanTabelHtml = document.getElementById('table-summary-kasir-body').parentNode.outerHTML;
             const rincianTabelHtml = document.getElementById('table-shifts-body').parentNode.outerHTML;
 
-            // Buat kontainer bersih mandiri terbebas dari jeratan scrollbar dasbor utama
             const elemenIsolasiCetak = document.createElement('div');
             elemenIsolasiCetak.style.padding = '10mm';
             elemenIsolasiCetak.style.fontFamily = 'monospace';
@@ -429,7 +444,7 @@
                 
                 <div style="margin-bottom: 6mm;">
                     <div style="background-color: #000; color: #fff; padding: 4px 8px; font-size: 11px; font-weight: bold; margin-bottom: 2mm;">
-                        I. RINGKASAN SETORAN KUMULATIF PER NAMA KASIR
+                        I. RINGKASAN SETORAN KUMULATIF PER NAMA KASIR & TOTAL AKHIR TOKO
                     </div>
                     ${ringkasanTabelHtml}
                 </div>
@@ -447,7 +462,6 @@
                 </div>
             </div>`;
 
-            // Atur konfigurasi pustaka pdf generator
             const opsiKonfigurasiPDF = {
                 margin:       [10, 10, 10, 10],
                 filename:     `Laporan_Harian_POS_${tanggalTarget}.pdf`,
@@ -456,7 +470,6 @@
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Jalankan engine ekspor dokumen via memori isolasi murni
             html2pdf().set(opsiKonfigurasiPDF).from(elemenIsolasiCetak).save().catch(err => {
                 alert("Metode Cetak Utama Tertahan, Mengaktifkan Sistem Cetak Cadangan Browser...");
                 window.print();
