@@ -93,7 +93,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 media-no-print">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 media-no-print">
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-72">
                 <h2 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <span class="text-emerald-600">📈</span> Histori Penjualan POS (Live)
@@ -152,22 +152,22 @@
             </div>
 
             <div class="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col h-96 overflow-hidden" id="area-pdf-laporan">
-                <div class="flex flex-col mb-2 border-b border-slate-100 pb-2 gap-2">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 media-no-print">
+                <div class="flex flex-col mb-3 border-b border-slate-100 pb-2.5 gap-2">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 media-no-print">
                         <h2 class="text-xs font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">
                             <span>📋</span> Laporan Harian Rekap Shift Kerja Kasir
                         </h2>
                         
-                        <div class="flex flex-wrap items-center gap-2 text-[11px] w-full sm:w-auto justify-between sm:justify-end">
-                            <div class="flex items-center gap-1">
+                        <div class="flex flex-row items-center gap-3 text-[11px] w-full sm:w-auto justify-between sm:justify-end">
+                            <div class="flex items-center gap-1.5">
                                 <span class="text-slate-400 font-bold">Tanggal:</span>
                                 <input type="date" id="filter-shift-date" onchange="renderTabelRekapShift()" class="border border-slate-300 rounded p-1 bg-white focus:outline-none focus:border-indigo-500 font-mono font-bold text-xs">
                             </div>
                             <div class="flex gap-1.5">
-                                <button onclick="unduhLaporanHarianExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-2.5 py-1.5 rounded-md flex items-center gap-1 cursor-pointer transition shadow-2xs active:scale-95">
+                                <button onclick="unduhLaporanHarianExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-2.5 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer transition shadow-2xs active:scale-95 text-xs">
                                     🟢 Excel
                                 </button>
-                                <button onclick="unduhLaporanHarianPDF()" class="bg-rose-600 hover:bg-rose-700 text-white font-black px-2.5 py-1.5 rounded-md flex items-center gap-1 cursor-pointer transition shadow-2xs active:scale-95">
+                                <button onclick="unduhLaporanHarianPDF()" class="bg-rose-600 hover:bg-rose-700 text-white font-black px-2.5 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer transition shadow-2xs active:scale-95 text-xs">
                                     📥 PDF
                                 </button>
                             </div>
@@ -176,23 +176,23 @@
                     
                     <div class="text-[10px] sm:text-[11px] bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1.5 rounded-lg font-mono font-bold flex justify-between items-center">
                         <span>📅 Periode: <span id="label-date-view" class="text-indigo-700"></span></span>
-                        <span class="text-slate-400">Terdeteksi: <span id="label-count-view" class="text-slate-700">0</span> Baris</span>
+                        <span class="text-slate-400">Terdeteksi: <span id="label-count-view" class="text-slate-700">0</span> Sesi</span>
                     </div>
                 </div>
                 
-                <div id="rekap-scroll-wrapper" class="overflow-y-auto flex-1 space-y-4 pr-1">
+                <div id="rekap-scroll-wrapper" class="flex-1 flex flex-col gap-3 overflow-y-auto no-scrollbar pr-1">
                     <div class="hidden show-only-on-pdf mb-4 text-center border-b-2 border-slate-950 pb-2">
                         <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider">REKAP OPERASIONAL HARIAN LAPORAN SHIFT KASIR</h3>
                         <p class="text-[10px] font-mono text-slate-500 font-bold">Tanggal Audit: <span id="pdf-date-title"></span></p>
                     </div>
 
-                    <div class="border border-indigo-100 rounded-lg overflow-hidden shrink-0">
+                    <div class="border border-indigo-100 rounded-xl overflow-hidden shrink-0 shadow-2xs">
                         <div class="bg-indigo-900 text-white px-3 py-1.5 text-[10px] font-black tracking-wider uppercase">
                             📊 RINGKASAN SETORAN AKUMULATIF PER NAMA KASIR
                         </div>
-                        <table id="table-summary-excel-target" class="w-full text-left border-collapse font-mono text-[10px] bg-indigo-50/50">
+                        <table id="table-summary-excel-target" class="w-full text-left border-collapse font-mono text-[10px] bg-indigo-50/40">
                             <thead>
-                                <tr class="bg-indigo-100 text-indigo-900 font-bold border-b border-indigo-200">
+                                <tr class="bg-indigo-100/80 text-indigo-900 font-bold border-b border-indigo-200">
                                     <th class="p-2">Nama Staff Kasir</th>
                                     <th class="p-2 text-right">Total Uang Modal</th>
                                     <th class="p-2 text-right text-emerald-800">Total Uang Laci</th>
@@ -204,10 +204,10 @@
                         </table>
                     </div>
 
-                    <div class="border border-slate-100 rounded-lg overflow-x-auto media-no-print">
+                    <div class="border border-slate-200 rounded-xl overflow-x-auto shadow-2xs media-no-print">
                         <table class="w-full text-left border-collapse min-w-[480px]">
                             <thead>
-                                <tr class="bg-slate-900 text-white font-bold sticky top-0 text-[11px]">
+                                <tr class="bg-slate-900 text-white font-bold text-[10px] uppercase tracking-wider">
                                     <th class="p-2.5">ID Shift</th>
                                     <th class="p-2.5">Staf Kasir</th>
                                     <th class="p-2.5 text-right">Modal</th>
@@ -378,7 +378,8 @@
             let grandTotalLaciSeluruhToko = 0;
 
             dataTerfilter.reverse().forEach(s => {
-                let statusStyle = s.status === "open" ? "bg-blue-50 text-blue-700 border border-blue-200 animate-pulse font-bold" : "bg-slate-100 text-slate-600 border border-slate-300 font-bold";
+                // FIX BADGE: Mendesain visual status kasir open/closed agar super elegan
+                let statusStyle = s.status === "open" ? "bg-blue-100 text-blue-800 border border-blue-200 animate-pulse font-bold" : "bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold";
                 
                 let modalAwal = parseInt(s.starting_cash || 0, 10);
                 let uangLaciAktual = parseInt(s.actual_cash || 0, 10);
@@ -400,7 +401,7 @@
                         <td class="p-2.5 text-right font-bold font-mono ${s.status === 'open' ? 'text-blue-500 italic font-medium' : 'text-emerald-700'}">
                             ${s.status === 'open' ? 'Sedang Buka' : 'Rp ' + uangLaciAktual.toLocaleString('id-ID')}
                         </td>
-                        <td class="p-2.5 text-center"><span class="px-1.5 py-0.5 rounded text-[9px] uppercase ${statusStyle}">${s.status}</span></td>
+                        <td class="p-2.5 text-center"><span class="px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider ${statusStyle}">${s.status}</span></td>
                     </tr>`;
             });
 
@@ -414,29 +415,22 @@
             }
 
             summaryBody.innerHTML += `
-                <tr class="bg-indigo-900 text-white font-black border-t-2 border-slate-950">
+                <tr class="bg-indigo-900 text-white font-black border-t-2 border-slate-950 text-xs">
                     <td class="p-2.5 text-left tracking-wider font-bold">GRAND TOTAL TOKO</td>
                     <td class="p-2.5 text-right font-mono">Rp ${grandTotalModalSeluruhToko.toLocaleString('id-ID')}</td>
                     <td class="p-2.5 text-right font-mono text-amber-300 font-black">Rp ${grandTotalLaciSeluruhToko.toLocaleString('id-ID')}</td>
                 </tr>`;
         }
 
-        // BARU!! FUNGSI UNTUK GENERATE & UNDUH FILE EXCEL REKAP SHIFT (.XLSX)
         function unduhLaporanHarianExcel() {
             if(document.getElementById('table-shifts-body').innerText.includes('Tidak ada rekap')) {
                 return alert("Gagal mengekspor! Tidak ada data rekap shift pada tanggal ini.");
             }
-            
             const tanggalTarget = document.getElementById('filter-shift-date').value.trim();
             const tabelHTML = document.getElementById('table-summary-excel-target');
-            
-            // Konversi elemen tabel HTML menjadi objek lembar kerja Workbook SheetJS
             const lembarKerja = XLSX.utils.table_to_sheet(tabelHTML);
             const fileWorkbook = XLSX.utils.book_new();
-            
             XLSX.utils.book_append_sheet(fileWorkbook, lembarKerja, "Rekap Shift");
-            
-            // Tembak proses download instan format file Excel .xlsx ke komputer / HP
             XLSX.writeFile(fileWorkbook, `Laporan_Rekap_Shift_${tanggalTarget}.xlsx`);
         }
 
@@ -578,6 +572,9 @@
             body { background-color: #ffffff !important; padding: 0 !important; }
             .show-only-on-pdf { display: block !important; }
         }
+        /* Mengamankan scrollbar mikro bawaan Tailwind agar UI tetap mulus */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </body>
 </html>
