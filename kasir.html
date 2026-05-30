@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POS Terminal Kasir (Responsive Mode)</title>
-    <!-- Tailwind CSS v4 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         /* Sembunyikan scrollbar bawaan browser agar UI terlihat seperti aplikasi native */
@@ -76,14 +75,12 @@
 </head>
 <body class="bg-slate-100 font-sans h-screen flex flex-col overflow-hidden text-slate-900 selection:bg-emerald-500 selection:text-white">
 
-    <!-- Header Panel Kasir -->
     <header class="bg-slate-900 text-white p-3 sm:p-4 shadow-md flex flex-col md:flex-row justify-between items-center gap-3 shrink-0">
         <div class="flex items-center gap-2">
             <span class="text-xl">🛒</span>
             <h1 class="text-base sm:text-lg font-black tracking-wider uppercase text-emerald-400">POS TERMINAL KASIR OPERASIONAL</h1>
         </div>
         
-        <!-- Kontrol Status Operator & Shift -->
         <div class="flex flex-wrap items-center justify-center md:justify-end gap-2 w-full md:w-auto text-xs">
             <div class="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center gap-2 font-mono">
                 <span class="text-slate-400">KASIR:</span>
@@ -100,26 +97,53 @@
         </div>
     </header>
 
-    <!-- Main Workspace Container -->
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-3 sm:p-4 overflow-y-auto lg:overflow-hidden min-h-0">
         
-        <!-- AREA LEFT (KATALOG PRODUK) -->
-        <div class="lg:col-span-7 bg-white p-4 rounded-xl shadow-xs border border-slate-200 flex flex-col min-h-[400px] lg:min-h-0 overflow-hidden">
-            <div class="flex gap-2 mb-4 shrink-0">
-                <div class="relative flex-1">
-                    <span class="absolute left-3 top-3 text-slate-400 text-sm">🔍</span>
-                    <input type="text" id="pos-search-input" oninput="jalankanFilterCariProduk()" placeholder="Scan barcode atau ketik nama barang..." class="w-full border border-slate-200 pl-9 pr-4 py-2 rounded-lg bg-slate-50 focus:outline-none focus:border-emerald-500 font-medium text-sm">
+        <div class="lg:col-span-7 flex flex-col gap-4 min-h-[550px] lg:min-h-0">
+            
+            <div class="flex-1 bg-white p-4 rounded-xl shadow-xs border border-slate-200 flex flex-col overflow-hidden min-h-[300px]">
+                <div class="flex gap-2 mb-3 shrink-0">
+                    <div class="relative flex-1">
+                        <span class="absolute left-3 top-3 text-slate-400 text-sm">🔍</span>
+                        <input type="text" id="pos-search-input" oninput="jalankanFilterCariProduk()" placeholder="Scan barcode atau ketik nama barang..." class="w-full border border-slate-200 pl-9 pr-4 py-2 rounded-lg bg-slate-50 focus:outline-none focus:border-emerald-500 font-medium text-sm">
+                    </div>
+                    <button onclick="bersihkanPencarianPOS()" class="bg-slate-200 hover:bg-slate-300 px-4 py-2 rounded-lg text-xs font-bold transition active:scale-95 cursor-pointer">Clear</button>
                 </div>
-                <button onclick="bersihkanPencarianPOS()" class="bg-slate-200 hover:bg-slate-300 px-4 py-2 rounded-lg text-xs font-bold transition active:scale-95 cursor-pointer">Clear</button>
+
+                <div class="flex-1 overflow-y-auto no-scrollbar pr-1">
+                    <div id="catalog-products-container" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+                </div>
             </div>
 
-            <div class="flex-1 overflow-y-auto no-scrollbar pr-1">
-                <h3 class="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Hasil Katalog Barang:</h3>
-                <div id="catalog-products-container" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+            <div class="h-48 bg-slate-900 text-white p-3 rounded-xl shadow-xs border border-slate-800 flex flex-col overflow-hidden shrink-0">
+                <div class="flex justify-between items-center pb-2 border-b border-slate-800 mb-2 shrink-0">
+                    <h3 class="text-xs font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
+                        <span>📊</span> Riwayat & Akumulasi Penjualan Shift Aktif
+                    </h3>
+                    <div class="text-[10px] font-mono bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
+                        Total Nota: <span id="shift-transaction-count" class="font-bold text-amber-400">0</span> | 
+                        Omzet: <span id="shift-total-omzet" class="font-bold text-emerald-400">Rp 0</span>
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-y-auto no-scrollbar text-[11px] font-mono">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-slate-400 border-b border-slate-800 sticky top-0 bg-slate-900">
+                                <th class="pb-1">No. Invoice</th>
+                                <th class="pb-1 text-center">Metode</th>
+                                <th class="pb-1 text-right">Total Jual</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-shift-sales-body" class="divide-y divide-slate-800/60 text-slate-300">
+                            <tr><td colspan="3" class="text-center py-6 text-slate-500 italic font-sans">Belum ada transaksi pada shift ini.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
         </div>
 
-        <!-- AREA RIGHT (KERANJANG & PEMBAYARAN) -->
         <div class="lg:col-span-5 bg-white p-4 rounded-xl shadow-xs border border-slate-200 flex flex-col min-h-[350px] lg:min-h-0 overflow-hidden">
             <div class="flex justify-between items-center mb-2 pb-2 border-b border-slate-100 shrink-0">
                 <h2 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-1">
@@ -165,30 +189,21 @@
         </div>
     </div>
 
-    <!-- AREA STRUK NOTA TERSEMBUNYI (PRESTIGE REKAP INDONESIA FORMAT) -->
     <div id="container-struk-nota-print">
         <div style="text-align: center; font-weight: bold; font-size: 11.5px; tracking-wide; uppercase; margin-bottom: 0.5mm;">KAFE TOKO POS KASIR</div>
         <div style="text-align: center; font-size: 8.5px; color: #111;">
             Jl. Raya Operasional Terpusat, Indonesia<br>
             Telp: 0812-3456-7890
         </div>
-        
         <div class="struk-divider"></div>
-        
         <div style="font-size: 8.5px; line-height: 1.35;">
             <div class="flex-print-row"><span>No. Nota : <span id="print-invoice-id">INV-XXXX</span></span></div>
             <div class="flex-print-row"><span>Waktu    : <span id="print-timestamp-id">2026-00-00</span></span></div>
             <div class="flex-print-row"><span>Kasir    : <span id="print-cashier-id">Kasir</span></span><span>Shift: <span id="print-shift-id">SF</span></span></div>
         </div>
-        
         <div class="struk-divider"></div>
-        
-        <!-- Rincian Daftar Belanjaan -->
         <div style="font-size: 8.5px;" id="print-items-list-area"></div>
-        
         <div class="struk-divider"></div>
-        
-        <!-- Bagian Finansial Akuntansi Penjualan Baku Bahasa Indonesia -->
         <div style="font-size: 9px; line-height: 1.4;">
             <div class="flex-print-row"><span>TOTAL BELANJA</span><span id="print-total-id">Rp 0</span></div>
             <div class="flex-print-row"><span>METODE PEMBAYARAN</span><span id="print-method-id">-</span></div>
@@ -196,19 +211,20 @@
             <div class="struk-divider" style="border-top-style: dotted !important;"></div>
             <div class="flex-print-row-bold"><span>KEMBALIAN</span><span id="print-change-id">Rp 0</span></div>
         </div>
-        
         <div style="text-align: center; font-size: 8.5px; margin-top: 5mm; border-top: 1px dashed #000; padding-top: 2mm; font-weight: bold;">
             Terima kasih atas kunjungan Anda<br>
             *** LUNAS ***
         </div>
     </div>
 
-    <!-- JAVASCRIPT POS ENGINE INTEGRATION -->
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbwyWjLnncrQMhpd-zT2xRZqPFhN_0b9hKWcTDyqch2vQexrsnuZULJkSbOWRTGER6mi/exec";
         let masterProduk = [];
         let keranjangBelanja = [];
         let dataOperatorShift = { cashier_name: "Kasir 1", shift_id: "SF-01" };
+        
+        // Array lokal untuk menampung transaksi khusus shift yang sedang aktif berjalan
+        let riwayatTransaksiShiftLokal = []; 
 
         async function muatKatalogProdukDariDatabase() {
             try {
@@ -330,6 +346,34 @@
             document.getElementById('label-cash-change').innerText = sisa < 0 ? "Uang Kurang!" : `Rp ${sisa.toLocaleString('id-ID')}`;
         }
 
+        // BARU: FUNGSI UNTUK MERENDER DAN MENGAKUMULASIKAN NOTA YANG TERJUAL KHUSUS SHIFT AKTIF
+        function renderDanHitungUlangRekapSesiShift() {
+            const tableBody = document.getElementById('table-shift-sales-body');
+            tableBody.innerHTML = '';
+            
+            if (riwayatTransaksiShiftLokal.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-6 text-slate-500 italic font-sans">Belum ada transaksi pada shift ini.</td></tr>`;
+                document.getElementById('shift-transaction-count').innerText = "0";
+                document.getElementById('shift-total-omzet').innerText = "Rp 0";
+                return;
+            }
+
+            let akumulasiOmzetSesi = 0;
+            riwayatTransaksiShiftLokal.forEach(nota => {
+                akumulasiOmzetSesi += nota.grand_total;
+                tableBody.innerHTML += `
+                    <tr class="hover:bg-slate-800 transition">
+                        <td class="py-1.5 font-bold text-emerald-400">${nota.invoice}</td>
+                        <td class="py-1.5 text-center"><span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-300">${nota.method}</span></td>
+                        <td class="py-1.5 text-right font-bold text-white">Rp ${nota.grand_total.toLocaleString('id-ID')}</td>
+                    </tr>`;
+            });
+
+            // Update widget ringkasan atas tabel secara real-time
+            document.getElementById('shift-transaction-count').innerText = riwayatTransaksiShiftLokal.length;
+            document.getElementById('shift-total-omzet').innerText = `Rp ${akumulasiOmzetSesi.toLocaleString('id-ID')}`;
+        }
+
         function eksekusiCheckoutTransaksi() {
             if (keranjangBelanja.length === 0) return alert("Keranjang belanja masih kosong!");
             
@@ -355,8 +399,19 @@
             .then(res => {
                 document.body.classList.remove("pointer-events-none", "opacity-50");
                 if(res.success) {
-                    document.getElementById('print-invoice-id').innerText = res.invoice;
                     
+                    // Masukkan transaksi baru ke riwayat rekap sesi shift lokal sebelum dicetak
+                    riwayatTransaksiShiftLokal.push({
+                        invoice: res.invoice,
+                        method: metode,
+                        grand_total: total
+                    });
+
+                    // Update tampilan tabel rekap shift
+                    renderDanHitungUlangRekapSesiShift();
+
+                    // --- FORMAT DATA NOTA UNTUK PRINTER ---
+                    document.getElementById('print-invoice-id').innerText = res.invoice;
                     const skrg = new Date();
                     const formatWaktu = skrg.getDate().toString().padStart(2, '0') + '/' + 
                                         (skrg.getMonth()+1).toString().padStart(2, '0') + '/' + 
@@ -404,11 +459,14 @@
             
             if(!nama || !idShift || !modal) return alert("Gagal memproses buka shift! Seluruh data input wajib terisi.");
             
-            // PERBAIKAN LOGIKA UTAMA: Langsung update variabel lokal & antarmuka HTML sebelum menembak ke database cloud
             dataOperatorShift.cashier_name = nama;
             dataOperatorShift.shift_id = idShift;
             document.getElementById('active-cashier-label').innerText = nama;
             document.getElementById('active-shift-label').innerText = idShift;
+
+            // Bersihkan total riwayat shift lama karena operator membuka sesi shift baru
+            riwayatTransaksiShiftLokal = [];
+            renderDanHitungUlangRekapSesiShift();
 
             const payload = { action: "bukaShift", cashier_name: nama, shift_id: idShift, starting_cash: modal };
 
@@ -417,7 +475,6 @@
             .then(res => {
                 if(!res.success) { 
                     alert(res.message);
-                    // Kembalikan ke teks semula jika ditolak cloud database (Multi-User guard)
                     document.getElementById('active-cashier-label').innerText = "Kasir 1";
                     document.getElementById('active-shift-label').innerText = "SF-01";
                 } else {
@@ -427,7 +484,16 @@
         }
 
         function triggerModalTutupShift() {
-            let uangLaci = prompt("Masukkan Total Perhitungan Uang Fisik Aktual di Dalam Laci (Rp):", "500000");
+            // Hitung otomatis omzet akumulasi lokal untuk memberikan gambaran ke kasir sebelum menghitung laci fisik
+            let totalOmzetSesiIni = 0;
+            riwayatTransaksiShiftLokal.forEach(n => totalOmzetSesiIni += n.grand_total);
+
+            let pesanPanduan = `INFORMASI REKAP SESI ${dataOperatorShift.shift_id}:\n`;
+            pesanPanduan += `- Total Transaksi Sukses: ${riwayatTransaksiShiftLokal.length} Nota\n`;
+            pesanPanduan += `- Total Omzet Penjualan  : Rp ${totalOmzetSesiIni.toLocaleString('id-ID')}\n\n`;
+            pesanPanduan += `Silakan masukkan total perhitungan uang fisik aktual di dalam laci kasir (Rp):`;
+
+            let uangLaci = prompt(pesanPanduan, "");
             if(!uangLaci) return alert("Proses penutupan shift dibatalkan.");
 
             const payload = {
