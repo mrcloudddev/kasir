@@ -296,9 +296,24 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbxEnIZWWAcUScJVUmkUPbRT-y6ETj2zh1id13JowpiPp6KgFf6jIb2nWHe4NfI74TB3/exec";
         let masterProduk = [];
         let keranjangBelanja = [];
-        let dataOperatorShift = { cashier_name: "", shift_id: "" };
-        let kasirAktif = false;
+        // Restore sesi dari localStorage (tahan refresh / sleep / mati lampu)
+        const _sesiTersimpan = JSON.parse(localStorage.getItem('pos_sesi') || 'null');
+        let dataOperatorShift = _sesiTersimpan
+            ? { cashier_name: _sesiTersimpan.cashier_name, shift_id: _sesiTersimpan.shift_id }
+            : { cashier_name: "", shift_id: "" };
+        let kasirAktif = !!_sesiTersimpan;
         let selectedAcIndex = -1;
+
+        function simpanSesi() {
+            if (kasirAktif) {
+                localStorage.setItem('pos_sesi', JSON.stringify({
+                    cashier_name: dataOperatorShift.cashier_name,
+                    shift_id: dataOperatorShift.shift_id
+                }));
+            } else {
+                localStorage.removeItem('pos_sesi');
+            }
+        }
         
         // Array penampung mutasi keuangan untuk shift aktif
         let riwayatTransaksiShiftLokal = [];
@@ -313,9 +328,11 @@
                 dot.className = 'status-dot aktif';
                 label.textContent = 'AKTIF';
                 label.className = 'font-bold text-emerald-400';
-                badge.className = badge.className.replace('bg-rose-900/40 border-rose-700', 'bg-emerald-900/40 border-emerald-700');
                 badge.style.cssText = 'background:rgba(6,78,59,0.4);border-color:#059669;';
                 overlay.classList.add('hidden');
+                // Tampilkan nama & shift dari sesi
+                document.getElementById('active-cashier-label').innerText = dataOperatorShift.cashier_name || '-';
+                document.getElementById('active-shift-label').innerText = dataOperatorShift.shift_id || '-';
             } else {
                 dot.className = 'status-dot nonaktif';
                 label.textContent = 'NONAKTIF';
@@ -323,6 +340,7 @@
                 badge.style.cssText = '';
                 overlay.classList.remove('hidden');
             }
+            simpanSesi();
         }
 
         async function muatKatalogProdukDariDatabase() {
@@ -357,9 +375,23 @@
         }
 
         function jalankanFilterCariProduk() {
-            const keyword = document.getElementById('pos-search-input').value.toLowerCase().trim();
-            const hasilSaring = masterProduk.filter(p => p.product_name.toLowerCase().includes(keyword) || p.barcode.includes(keyword));
-            renderKatalogProduk(hasilSaring);
+            const raw = document.getElementById('pos-search-input').value;
+            const keyword = String(raw || '').toLowerCase().trim();
+            if (!keyword) {
+                renderKatalogProduk(masterProduk);
+                document.getElementById('autocomplete-dropdown').style.display = 'none';
+                return;
+            }
+            try {
+                const hasilSaring = masterProduk.filter(p => {
+                    const nama = String(p.product_name || '').toLowerCase();
+                    const kode = String(p.barcode || '').toLowerCase();
+                    return nama.includes(keyword) || kode.includes(keyword);
+                });
+                renderKatalogProduk(hasilSaring);
+            } catch(err) {
+                console.error('Filter error:', err);
+            }
             tampilkanAutocomplete();
         }
 
@@ -369,9 +401,11 @@
             const dropdown = document.getElementById('autocomplete-dropdown');
             selectedAcIndex = -1;
             if (!keyword || keyword.length < 1) { dropdown.style.display = 'none'; return; }
-            const hasil = masterProduk.filter(p =>
-                p.product_name.toLowerCase().includes(keyword) || p.barcode.toString().includes(keyword)
-            ).slice(0, 8);
+            const hasil = masterProduk.filter(p => {
+                const nama = (p.product_name || '').toLowerCase();
+                const kode = (p.barcode || '').toString().toLowerCase();
+                return nama.includes(keyword) || kode.includes(keyword);
+            }).slice(0, 8);
             if (!hasil.length) { dropdown.style.display = 'none'; return; }
             // Posisikan dropdown tepat di bawah input (fixed position)
             const rect = input.getBoundingClientRect();
@@ -624,11 +658,17 @@
         }
 
         function triggerModalBukaShift() {
-            let nama = prompt("Masukkan Nama Staff Kasir:", dataOperatorShift.cashier_name);
-            let idShift = prompt("Masukkan ID/Kode Shift Kerja (Contoh: SF-01):", dataOperatorShift.shift_id);
-            let modal = prompt("Masukkan Besaran Uang Modal Awal Laci Kasir (Rp):", "500000");
-            
-            if(!nama || !idShift || !modal) return alert("Gagal memproses buka shift! Seluruh data input wajib terisi.");
+            let nama = prompt("Masukkan Nama Staff Kasir:", dataOperatorShift.cashier_name || "");
+            if (!nama) return;
+            let idShift = prompt("Masukkan ID/Kode Shift Kerja (Contoh: SF-01):", dataOperatorShift.shift_id || "");
+            if (!idShift) return;
+
+            // Jika sesi sudah aktif (restore dari localStorage), tidak perlu modal awal lagi
+            let modal = "0";
+            if (!kasirAktif) {
+                modal = prompt("Masukkan Besaran Uang Modal Awal Laci Kasir (Rp):", "500000");
+                if (!modal) return alert("Gagal memproses buka shift! Modal awal wajib diisi.");
+            }
             
             dataOperatorShift.cashier_name = nama;
             dataOperatorShift.shift_id = idShift;
@@ -692,11 +732,11 @@
             .then(r => r.json())
             .then(res => {
                 alert(res.message);
+                dataOperatorShift = { cashier_name: "", shift_id: "" };
+                riwayatTransaksiShiftLokal = [];
                 setStatusKasir(false);
                 document.getElementById('active-cashier-label').innerText = "-";
                 document.getElementById('active-shift-label').innerText = "-";
-                dataOperatorShift = { cashier_name: "", shift_id: "" };
-                riwayatTransaksiShiftLokal = [];
             });
         }
 
@@ -708,7 +748,12 @@
         });
 
         window.addEventListener('DOMContentLoaded', function() {
-            setStatusKasir(false);
+            if (_sesiTersimpan) {
+                // Restore sesi tanpa prompt modal awal lagi
+                setStatusKasir(true);
+            } else {
+                setStatusKasir(false);
+            }
             muatKatalogProdukDariDatabase();
         });
     </script>
