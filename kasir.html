@@ -671,7 +671,10 @@
             if (!idShift) return;
 
             // isAutoRestore = true hanya saat restore otomatis (refresh/sleep)
-            // Kalau user buka shift manual (termasuk setelah tutup shift), selalu minta modal
+            // Kalau kasir sedang NONAKTIF (tutup shift sudah dilakukan), pasti bukan restore
+            // Paksa false jika kasir sedang tidak aktif sebagai safety net
+            if (!kasirAktif) isAutoRestore = false;
+
             let modal;
             if (isAutoRestore) {
                 // Restore otomatis — tidak kirim ke DB, tidak tanya modal
@@ -753,6 +756,7 @@
                 dataOperatorShift = { cashier_name: "", shift_id: "" };
                 riwayatTransaksiShiftLokal = [];
                 simpanRiwayat();
+                isAutoRestore = false; // FIX: reset flag agar kasir berikutnya selalu kirim ke DB
                 setStatusKasir(false);
                 document.getElementById('active-cashier-label').innerText = "-";
                 document.getElementById('active-shift-label').innerText = "-";
