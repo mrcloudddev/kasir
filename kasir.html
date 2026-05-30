@@ -30,11 +30,12 @@
 
         /* AUTOCOMPLETE DROPDOWN */
         #autocomplete-dropdown {
-            position: absolute; top: 100%; left: 0; right: 0;
+            position: fixed;
             background: white; border: 1.5px solid #10b981;
-            border-top: none; border-radius: 0 0 10px 10px;
-            z-index: 50; max-height: 220px; overflow-y: auto;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border-radius: 10px;
+            z-index: 999; max-height: 260px; overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            display: none;
         }
         #autocomplete-dropdown .ac-item {
             padding: 8px 12px; cursor: pointer;
@@ -165,7 +166,7 @@
                         placeholder="Scan barcode atau ketik nama barang..." 
                         class="w-full border border-slate-200 pl-9 pr-4 py-2 rounded-lg bg-slate-50 focus:outline-none focus:border-emerald-500 font-medium text-sm"
                         autocomplete="off">
-                    <div id="autocomplete-dropdown" style="display:none;"></div>
+                    <div id="autocomplete-dropdown"></div>
                 </div>
                 <button onclick="bersihkanPencarianPOS()" class="bg-slate-200 hover:bg-slate-300 px-4 py-2 rounded-lg text-xs font-bold transition active:scale-95 cursor-pointer">Clear</button>
             </div>
@@ -363,7 +364,8 @@
         }
 
         function tampilkanAutocomplete() {
-            const keyword = document.getElementById('pos-search-input').value.toLowerCase().trim();
+            const input = document.getElementById('pos-search-input');
+            const keyword = input.value.toLowerCase().trim();
             const dropdown = document.getElementById('autocomplete-dropdown');
             selectedAcIndex = -1;
             if (!keyword || keyword.length < 1) { dropdown.style.display = 'none'; return; }
@@ -371,10 +373,17 @@
                 p.product_name.toLowerCase().includes(keyword) || p.barcode.toString().includes(keyword)
             ).slice(0, 8);
             if (!hasil.length) { dropdown.style.display = 'none'; return; }
+            // Posisikan dropdown tepat di bawah input (fixed position)
+            const rect = input.getBoundingClientRect();
+            dropdown.style.top = (rect.bottom + 4) + 'px';
+            dropdown.style.left = rect.left + 'px';
+            dropdown.style.width = rect.width + 'px';
             dropdown.innerHTML = hasil.map((p, i) => {
                 const stok = parseInt(p.stock);
                 const badgeClass = stok <= 0 ? 'ac-stock-out' : stok <= 10 ? 'ac-stock-low' : 'ac-stock-ok';
-                const nama = p.product_name.replace(new RegExp(keyword, 'gi'), m => `<mark style="background:#d1fae5;border-radius:2px;">${m}</mark>`);
+                // escape keyword for regex special chars
+                const kw = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const nama = p.product_name.replace(new RegExp(kw, 'gi'), m => `<mark style="background:#d1fae5;border-radius:2px;">${m}</mark>`);
                 return `<div class="ac-item" data-barcode="${p.barcode}" onmousedown="pilihDariAutocomplete('${p.barcode}')">
                     <span class="ac-barcode">${p.barcode}</span>
                     <span class="ac-name">${nama}</span>
@@ -384,6 +393,16 @@
             }).join('');
             dropdown.style.display = 'block';
         }
+
+        // Reposisi dropdown saat scroll/resize
+        window.addEventListener('scroll', function() {
+            const dropdown = document.getElementById('autocomplete-dropdown');
+            if (dropdown.style.display === 'block') tampilkanAutocomplete();
+        }, true);
+        window.addEventListener('resize', function() {
+            const dropdown = document.getElementById('autocomplete-dropdown');
+            if (dropdown.style.display === 'block') tampilkanAutocomplete();
+        });
 
         function pilihDariAutocomplete(barcode) {
             tambahKeKeranjangBelanja(barcode);
