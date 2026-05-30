@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POS Terminal Kasir (Responsive Mode)</title>
+    <!-- Tailwind CSS v4 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         /* Sembunyikan scrollbar bawaan browser agar UI terlihat seperti aplikasi native */
@@ -13,12 +14,14 @@
 </head>
 <body class="bg-slate-100 font-sans h-screen flex flex-col overflow-hidden text-slate-900 selection:bg-emerald-500 selection:text-white">
 
+    <!-- Header Panel Kasir -->
     <header class="bg-slate-900 text-white p-3 sm:p-4 shadow-md flex flex-col md:flex-row justify-between items-center gap-3 shrink-0">
         <div class="flex items-center gap-2">
             <span class="text-xl">🛒</span>
             <h1 class="text-base sm:text-lg font-black tracking-wider uppercase text-emerald-400">POS TERMINAL KASIR OPERASIONAL</h1>
         </div>
         
+        <!-- Kontrol Status Operator & Shift -->
         <div class="flex flex-wrap items-center justify-center md:justify-end gap-2 w-full md:w-auto text-xs">
             <div class="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center gap-2 font-mono">
                 <span class="text-slate-400">KASIR:</span>
@@ -35,10 +38,13 @@
         </div>
     </header>
 
+    <!-- Main Workspace Container -->
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-3 sm:p-4 overflow-y-auto lg:overflow-hidden min-h-0">
         
+        <!-- AREA LEFT (KATALOG PRODUK): 7 Kolom Desktop, Otomatis Stack di HP -->
         <div class="lg:col-span-7 bg-white p-4 rounded-xl shadow-xs border border-slate-200 flex flex-col min-h-[400px] lg:min-h-0 overflow-hidden">
             
+            <!-- Bar Pencarian & Scan Barcode -->
             <div class="flex gap-2 mb-4 shrink-0">
                 <div class="relative flex-1">
                     <span class="absolute left-3 top-3 text-slate-400 text-sm">🔍</span>
@@ -47,13 +53,16 @@
                 <button onclick="bersihkanPencarianPOS()" class="bg-slate-200 hover:bg-slate-300 px-4 py-2 rounded-lg text-xs font-bold transition active:scale-95 cursor-pointer">Clear</button>
             </div>
 
+            <!-- Grid Item Katalog Produk (Scrollable Sisi Dalam) -->
             <div class="flex-1 overflow-y-auto no-scrollbar pr-1">
                 <h3 class="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Hasil Katalog Barang:</h3>
                 <div id="catalog-products-container" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    </div>
+                    <!-- Data Produk Di-render Otomatis via JS -->
+                </div>
             </div>
         </div>
 
+        <!-- AREA RIGHT (KERANJANG & PEMBAYARAN): 5 Kolom Desktop, Otomatis Stack di HP -->
         <div class="lg:col-span-5 bg-white p-4 rounded-xl shadow-xs border border-slate-200 flex flex-col min-h-[350px] lg:min-h-0 overflow-hidden">
             <div class="flex justify-between items-center mb-2 pb-2 border-b border-slate-100 shrink-0">
                 <h2 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-1">
@@ -62,10 +71,12 @@
                 <button onclick="kosongkanKeranjangTotal()" class="text-[11px] text-rose-500 font-bold hover:underline cursor-pointer">Hold / Void Semua</button>
             </div>
 
+            <!-- List Item di Keranjang Belanja -->
             <div id="cart-items-wrapper" class="flex-1 overflow-y-auto no-scrollbar pr-1 space-y-2 divide-y divide-slate-50 text-xs">
                 <div class="text-center py-12 text-slate-400 italic">Keranjang belanja kosong. Silakan ketuk produk di sebelah kiri.</div>
             </div>
 
+            <!-- Form Grand Total Finansial Kasir -->
             <div class="mt-4 pt-3 border-t-2 border-dashed border-slate-200 space-y-3 shrink-0">
                 <div class="flex justify-between items-center bg-emerald-50 p-3 rounded-lg border border-emerald-100">
                     <span class="text-xs font-bold text-emerald-800 uppercase tracking-wider">TOTAL NOTA:</span>
@@ -100,11 +111,16 @@
         </div>
     </div>
 
+    <!-- JAVASCRIPT POS ENGINE INTEGRATION -->
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbyeGe0Z_vWqJU4BrJmn872SJMXZEG2MmsLlW9Hr8p8l0jvoMqqV201QnoPc6-kM6WII/exec";
         let masterProduk = [];
         let keranjangBelanja = [];
         let dataOperatorShift = { cashier_name: "Kasir 1", shift_id: "SF-01" };
+
+        function toggleLoading(show) {
+            // Placeholder jika Anda menambahkan indikator spinner loading di masa mendatang
+        }
 
         async function muatKatalogProdukDariDatabase() {
             try {
@@ -148,13 +164,21 @@
             renderKatalogProduk(masterProduk);
         }
 
+        // PERBAIKAN LOGIKA UTAMA: Mengunci perbandingan matematika stok menggunakan bilangan bulat integer murni (parseInt)
         function tambahKeKeranjangBelanja(barcode) {
-            const produk = masterProduk.find(p => p.barcode === barcode);
-            if (!produk || produk.stock <= 0) return alert("Barang tidak valid atau stok rak habis!");
+            const produk = masterProduk.find(p => p.barcode.toString().trim() === barcode.toString().trim());
+            const jumlahStokRak = parseInt(produk ? produk.stock : 0, 10);
             
-            const itemDiKeranjang = keranjangBelanja.find(item => item.barcode === barcode);
+            if (!produk || jumlahStokRak <= 0) {
+                return alert(`Gagal Menambahkan!\nProduk [${barcode}] tidak valid atau stok fisik di rak memang sudah habis (0 Pcs).`);
+            }
+            
+            const itemDiKeranjang = keranjangBelanja.find(item => item.barcode.toString().trim() === barcode.toString().trim());
+            
             if (itemDiKeranjang) {
-                if (itemDiKeranjang.quantity >= produk.stock) return alert("Batas maksimal pembelian sesuai sisa stok rak gudang!");
+                if (parseInt(itemDiKeranjang.quantity, 10) >= jumlahStokRak) {
+                    return alert(`Stok Terbatas!\nAnda tidak bisa menambah kuantitas lagi karena jumlah di keranjang sudah maksimal sesuai sisa stok rak (${jumlahStokRak} Pcs).`);
+                }
                 itemDiKeranjang.quantity += 1;
             } else {
                 keranjangBelanja.push({ ...produk, quantity: 1 });
@@ -163,11 +187,11 @@
         }
 
         function ubahKuantitasItem(barcode, jumlah) {
-            const item = keranjangBelanja.find(i => i.barcode === barcode);
+            const item = keranjangBelanja.find(i => i.barcode.toString().trim() === barcode.toString().trim());
             if (!item) return;
             item.quantity += jumlah;
             if (item.quantity <= 0) {
-                keranjangBelanja = keranjangBelanja.filter(i => i.barcode !== barcode);
+                keranjangBelanja = keranjangBelanja.filter(i => i.barcode.toString().trim() !== barcode.toString().trim());
             }
             hitungUlangStrukturKeranjang();
         }
@@ -216,7 +240,6 @@
             keranjangBelanja.forEach(i => total += (i.selling_price * i.quantity));
             let bayar = parseInt(document.getElementById('pos-cash-received').value || 0);
             let sisa = bayar - total;
-            document.getElementById('label-change-change');
             document.getElementById('label-cash-change').innerText = sisa < 0 ? "Uang Kurang!" : `Rp ${sisa.toLocaleString('id-ID')}`;
         }
 
@@ -239,23 +262,20 @@
             };
 
             document.body.classList.add("pointer-events-none", "opacity-50");
-            toggleLoading(true);
 
             fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
             .then(res => res.json())
             .then(res => {
                 document.body.classList.remove("pointer-events-none", "opacity-50");
-                toggleLoading(false);
                 if(res.success) {
                     alert(`Transaksi Sukses Terkunci!\nNomor Invoice: ${res.invoice}`);
                     kosongkanKeranjangTotal();
                     document.getElementById('pos-cash-received').value = 0;
                     muatKatalogProdukDariDatabase();
                 } else { alert(res.message); }
-            }).catch(() => { document.body.classList.remove("pointer-events-none", "opacity-50"); toggleLoading(false); });
+            }).catch(() => { document.body.classList.remove("pointer-events-none", "opacity-50"); });
         }
 
-        // SIMULASI AKSI MANAJEMEN SHIFT OPERASIONAL KASIR
         function triggerModalBukaShift() {
             let nama = prompt("Masukkan Nama Staff Kasir:", dataOperatorShift.cashier_name);
             let idShift = prompt("Masukkan ID/Kode Shift Kerja (Contoh: SF-01):", dataOperatorShift.shift_id);
@@ -264,12 +284,10 @@
             if(!nama || !idShift || !modal) return alert("Gagal memproses buka shift! Seluruh data input wajib terisi.");
             
             const payload = { action: "bukaShift", cashier_name: nama, shift_id: idShift, starting_cash: modal };
-            toggleLoading(true);
 
             fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
             .then(r => r.json())
             .then(res => {
-                toggleLoading(false);
                 if(res.success) {
                     dataOperatorShift.cashier_name = nama;
                     dataOperatorShift.shift_id = idShift;
@@ -277,7 +295,7 @@
                     document.getElementById('active-shift-label').innerText = idShift;
                     alert(res.message);
                 } else { alert(res.message); }
-            }).catch(() => toggleLoading(false));
+            });
         }
 
         function triggerModalTutupShift() {
@@ -290,14 +308,10 @@
                 shift_id: dataOperatorShift.shift_id,
                 actual_cash: uangLaci
             };
-            toggleLoading(true);
 
             fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
             .then(r => r.json())
-            .then(res => {
-                toggleLoading(false);
-                alert(res.message);
-            }).catch(() => toggleLoading(false));
+            .then(res => { alert(res.message); });
         }
 
         window.addEventListener('DOMContentLoaded', muatKatalogProdukDariDatabase);
