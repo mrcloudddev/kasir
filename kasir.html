@@ -37,7 +37,8 @@
                 display: block !important;
                 width: 52mm !important; /* Dioptimalkan agar pas di area cetak printer thermal 58mm */
                 margin: 0 auto !important;
-                padding: 0mm 0mm 4mm 0mm !important;
+                /* FIX FIX: Jarak atas disesuaikan menjadi 5mm agar tidak terlalu ke atas */
+                padding: 5mm 0mm 5mm 0mm !important; 
                 font-size: 9.5px !important;
                 line-height: 1.3 !important;
                 box-sizing: border-box !important;
@@ -169,7 +170,6 @@
 
     <!-- AREA STRUK NOTA TERSEMBUNYI (PRESTIGE REKAP INDONESIA FORMAT) -->
     <div id="container-struk-nota-print">
-        <!-- IKON DIHAPUS, BERFOKUS PADA TEKS JUDUL UTAMA -->
         <div style="text-align: center; font-weight: bold; font-size: 11.5px; tracking-wide; uppercase; margin-bottom: 0.5mm;">KAFE TOKO POS KASIR</div>
         <div style="text-align: center; font-size: 8.5px; color: #111;">
             Jl. Raya Operasional Terpusat, Indonesia<br>
@@ -200,7 +200,6 @@
             <div class="flex-print-row-bold"><span>KEMBALIAN</span><span id="print-change-id">Rp 0</span></div>
         </div>
         
-        <!-- TEKS PENUTUP RESMI BAHASA INDONESIA BAKU -->
         <div style="text-align: center; font-size: 8.5px; margin-top: 5mm; border-top: 1px dashed #000; padding-top: 2mm; font-weight: bold;">
             Terima kasih atas kunjungan Anda<br>
             *** LUNAS ***
@@ -363,7 +362,6 @@
                     // --- KOMPILASI DATA VISUAL NOTA KASIR ---
                     document.getElementById('print-invoice-id').innerText = res.invoice;
                     
-                    // Format waktu Indonesia baku (Tanggal/Bulan/Tahun Jam:Menit)
                     const skrg = new Date();
                     const formatWaktu = skrg.getDate().toString().padStart(2, '0') + '/' + 
                                         (skrg.getMonth()+1).toString().padStart(2, '0') + '/' + 
@@ -381,7 +379,6 @@
                     let hitungSisa = bayar - total;
                     document.getElementById('print-change-id').innerText = metode === "TUNAI" ? `Rp ${hitungSisa.toLocaleString('id-ID')}` : "Rp 0";
 
-                    // Inject rincian item belanjaan ke area cetak nota dengan format Rp rapi
                     let listArea = document.getElementById('print-items-list-area');
                     listArea.innerHTML = '';
                     keranjangBelanja.forEach(item => {
